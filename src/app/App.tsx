@@ -536,7 +536,7 @@ export default function App() {
               )}
 
               {/* ══ MEMO ══ */}
-              {activeTab === "memo" && (
+              {/* {activeTab === "memo" && (
                 <div>
                   <SectionTitle>📌 메모 목록</SectionTitle>
                   <div className="grid grid-cols-5 gap-3 mt-3">
@@ -575,7 +575,7 @@ export default function App() {
                     onChange={setMemoPage}
                   />
                 </div>
-              )}
+              )} */}
 
               {/* ══ DIARY ══ */}
               {activeTab === "diary" && <DiaryTab />}
