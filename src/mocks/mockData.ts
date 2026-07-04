@@ -1,4 +1,4 @@
-import type { Diary } from "../features/diary/types";
+import type { Diary } from "../features/diary/types/diary";
 
 export const DIARY_ENTRIES: Record<string, Diary> = {
   "2026-06-30": {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import DiaryTab from "../features/diary/DiaryTab";
+import DiaryTab from "../features/diary/components/DiaryTab";
 import { DIARY_ENTRIES } from "../mocks/mockData";
 
 type Tab = "home" | "memo" | "diary" | "guestbook";

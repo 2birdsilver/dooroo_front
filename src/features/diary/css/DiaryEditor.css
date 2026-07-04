@@ -1,9 +1,0 @@
-.editor .ProseMirror {
-  min-height: 400px;
-  padding: 16px;
-  outline: none;
-}
-
-.editor .ProseMirror p {
-  margin: 0;
-}

@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import DiaryCalendar from "./components/DiaryCalendar";
-import DiaryContent from "./components/DiaryContent";
-import DiaryNavigator from "./components/DiaryNavigator";
-import DiaryWrite from "./components/DiaryWrite";
+import DiaryCalendar from "./DiaryCalendar";
+import DiaryContent from "./DiaryContent";
+import DiaryNavigator from "./DiaryNavigator";
+import DiaryWrite from "./DiaryWrite";
 
-import { DIARY_ENTRIES } from "../../mocks/mockData";
+import { DIARY_ENTRIES } from "../../../mocks/mockData";
+import { Diary } from "../types/diary";
+import { diaryApi } from "../api/diaryApi";
 
 const DiaryTab = () => {
   const [isWriting, setIsWriting] = useState(false);
@@ -48,7 +50,30 @@ const DiaryTab = () => {
     }
   };
 
-  const selectedDiary = DIARY_ENTRIES[formatDate(selectedDate)] ?? null;
+  // API로부터 받아온 실제 일기 데이터를 저장할 상태관리
+  const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadDiary = async () => {
+      setLoading(true);
+      try {
+        const dateStr = formatDate(selectedDate); // 예: "2026-07-04"
+
+        // 💡 분리된 diaryApi를 사용하여 날짜 기반 fetch 호출 실행
+        const data = await diaryApi.getDiaryByDate(10, dateStr);
+
+        setSelectedDiary(data); // 찾은 일기 데이터를 주입 (없으면 null)
+      } catch (error) {
+        console.error(error);
+        setSelectedDiary(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDiary();
+  }, [selectedDate]); // 💡 selectedDate가 바뀔 때마다 서버를 찔러 데이터를 가져옴
 
   return (
     <>

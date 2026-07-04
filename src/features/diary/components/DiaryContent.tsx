@@ -1,4 +1,5 @@
-import type { Diary } from "../types";
+import type { Diary } from "../types/diary";
+import "../css/Diary.css";
 
 interface Props {
   diary: Diary | null;
@@ -15,7 +16,10 @@ const DiaryContent = ({ diary }: Props) => {
 
       <div className="text-sm text-gray-500 mb-3">{diary.diaryDate}</div>
 
-      <div>{diary.content}</div>
+      <div
+        className="prose max-w-none text-gray-700 leading-relaxed min-h-[200px]"
+        dangerouslySetInnerHTML={{ __html: diary.content }}
+      />
     </div>
   );
 };

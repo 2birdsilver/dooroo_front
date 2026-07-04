@@ -1,0 +1,23 @@
+.editor .ProseMirror {
+  min-height: 400px;
+  padding: 16px;
+  outline: none;
+}
+
+.editor .ProseMirror p {
+  margin: 0;
+}
+
+/* 글로벌 CSS 파일 또는 CSS Module에 추가하면 좋은 기본 서식 */
+.prose p {
+  margin-bottom: 0.5rem;
+}
+.prose strong {
+  font-weight: bold;
+}
+.prose em {
+  font-style: italic;
+}
+.prose u {
+  text-decoration: underline;
+}
