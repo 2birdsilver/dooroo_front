@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DiaryTab from "../features/diary/components/DiaryTab";
 import { DIARY_ENTRIES } from "../mocks/mockData";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import MySpacePage from "../features/user/pages/MySpacePage";
+import LoginPage from "../features/user/pages/LoginPage";
+import LandingPage from "../features/user/pages/LandingPage";
+import SignupPage from "../features/user/pages/SignupPage";
 
 // type Tab = "home" | "memo" | "diary" | "guestbook";
 type Tab = "home" | "diary" | "guestbook";
@@ -214,6 +224,9 @@ const TODAY = new Date(2026, 5, 30);
 // ── main component ────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedDate, setSelectedDate] = useState(TODAY);
   const [calMonth, setCalMonth] = useState(
@@ -287,428 +300,52 @@ export default function App() {
     setGbForm({ author: "", message: "" });
   };
 
-  return (
-    <div
-      className="min-h-screen bg-background"
-      style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
-    >
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex gap-6 items-start">
-          {/* ── Left sidebar: Profile ── */}
-          <aside className="w-56 flex-shrink-0 sticky top-10">
-            <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
-              {/* Avatar */}
-              <div className="flex flex-col items-center mb-4">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-3 shadow-inner"
-                  style={{
-                    background: "linear-gradient(135deg, #f0e4d4, #e8b49a)",
-                  }}
-                >
-                  🌸
-                </div>
-                <h2
-                  className="text-sm font-semibold text-foreground"
-                  style={{ fontFamily: "'Gowun Batang', serif" }}
-                >
-                  봄이네 공간
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  @bom_space
-                </p>
-              </div>
+  useEffect(() => {
+    // 💡 앱이 켜질 때 브라우저에 저장된 토큰이 있는지 확인해서 로그인 유지
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+    setIsLoading(false);
+  }, []);
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-1.5 mb-4">
-                {[
-                  ["36", "일기"],
-                  ["10", "메모"],
-                  ["5", "방명록"],
-                ].map(([v, l]) => (
-                  <div
-                    key={l}
-                    className="bg-secondary rounded-xl py-1.5 text-center"
-                  >
-                    <div className="text-xs font-bold text-foreground">{v}</div>
-                    <div className="text-[10px] text-muted-foreground">{l}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {["#일상기록", "#독서", "#홈카페", "#감성"].map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-[10px] bg-accent/50 text-foreground/70 px-2 py-0.5 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <hr className="border-border mb-4" />
-
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <span>📍</span> 서울, 대한민국
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🎂</span> 1998년생
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>📅</span> 2022년 가입
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* ── Right content area ── */}
-          <div className="flex-1 min-w-0">
-            {/* Bookmark-style tabs */}
-            <div className="flex gap-0.5 pl-1">
-              {TABS.map((tab) => {
-                const active = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className="relative px-5 py-2 text-sm rounded-t-xl border border-border transition-all duration-150"
-                    style={{
-                      background: active ? "var(--card)" : "var(--secondary)",
-                      color: active
-                        ? "var(--foreground)"
-                        : "var(--muted-foreground)",
-                      fontWeight: active ? 600 : 400,
-                      borderBottom: active
-                        ? "1px solid var(--card)"
-                        : "1px solid var(--border)",
-                      marginBottom: active ? "-1px" : "0",
-                      zIndex: active ? 10 : 1,
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Content panel */}
-            <div
-              className="bg-card border border-border rounded-b-2xl rounded-tr-2xl p-6 shadow-sm"
-              style={{ position: "relative", zIndex: 5 }}
-            >
-              {/* ══ HOME ══ */}
-              {activeTab === "home" && (
-                <div className="space-y-7">
-                  {/* Anniversaries */}
-                  <section>
-                    <SectionTitle>🎀 기념일</SectionTitle>
-                    <div className="grid grid-cols-3 gap-3">
-                      {ANNIVERSARIES.map((a) => (
-                        <div
-                          key={a.label}
-                          className="bg-secondary rounded-xl p-3 text-center"
-                        >
-                          <div className="text-[11px] text-muted-foreground mb-1">
-                            {a.label}
-                          </div>
-                          <div
-                            className="text-lg font-bold"
-                            style={{
-                              color: "var(--primary)",
-                              fontFamily: "'Gowun Batang', serif",
-                            }}
-                          >
-                            {getDday(a.date)}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground mt-1">
-                            {a.date}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* Heatmap */}
-                  <section>
-                    <SectionTitle>📔 일기 기록</SectionTitle>
-                    <div className="bg-secondary/60 rounded-xl p-4 overflow-x-auto">
-                      {/* month labels */}
-                      <div className="flex gap-[3px] mb-1 pl-0">
-                        {heatmapWeeks.map((week, wi) => {
-                          const first = week.find((d) => d.getDate() === 1);
-                          return (
-                            <div
-                              key={wi}
-                              className="w-[11px] text-[8px] text-muted-foreground text-center leading-none"
-                            >
-                              {first ? `${first.getMonth() + 1}` : ""}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div className="flex gap-[3px]">
-                        {/* day-of-week labels */}
-                        <div className="flex flex-col gap-[3px] mr-1">
-                          {["일", "월", "화", "수", "목", "금", "토"].map(
-                            (d) => (
-                              <div
-                                key={d}
-                                className="w-[11px] h-[11px] text-[8px] text-muted-foreground flex items-center justify-center leading-none"
-                              >
-                                {d === "월" || d === "수" || d === "금"
-                                  ? d
-                                  : ""}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                        {heatmapWeeks.map((week, wi) => (
-                          <div key={wi} className="flex flex-col gap-[3px]">
-                            {week.map((day, di) => {
-                              const key = formatDate(day);
-                              const has = DIARY_DATES.has(key);
-                              const future = day > TODAY;
-                              const outOfYear =
-                                day.getFullYear() !== TODAY.getFullYear();
-                              return (
-                                <div
-                                  key={di}
-                                  title={outOfYear ? "" : key}
-                                  className="w-[11px] h-[11px] rounded-[2px] transition-colors cursor-default"
-                                  style={{
-                                    backgroundColor: outOfYear
-                                      ? "transparent"
-                                      : future
-                                        ? "rgba(180,140,110,0.06)"
-                                        : has
-                                          ? "var(--primary)"
-                                          : "var(--muted)",
-                                    opacity: future && !outOfYear ? 0.3 : 1,
-                                  }}
-                                />
-                              );
-                            })}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Bio */}
-                  <section>
-                    <div className="flex items-center justify-between mb-2">
-                      <SectionTitle>✍️ 소개글</SectionTitle>
-                      <button
-                        onClick={() => setEditingBio(!editingBio)}
-                        className="text-xs transition-colors hover:opacity-70"
-                        style={{ color: "var(--primary)" }}
-                      >
-                        {editingBio ? "저장 ✓" : "수정하기"}
-                      </button>
-                    </div>
-                    {editingBio ? (
-                      <textarea
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        className="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none transition-colors"
-                        style={{
-                          background: "var(--secondary)",
-                          border: "1px solid var(--primary)",
-                          color: "var(--foreground)",
-                        }}
-                        rows={4}
-                      />
-                    ) : (
-                      <div
-                        className="rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line"
-                        style={{
-                          background: "var(--secondary)",
-                          color: "var(--foreground)",
-                        }}
-                      >
-                        {bio}
-                      </div>
-                    )}
-                  </section>
-                </div>
-              )}
-
-              {/* ══ MEMO ══ */}
-              {/* {activeTab === "memo" && (
-                <div>
-                  <SectionTitle>📌 메모 목록</SectionTitle>
-                  <div className="grid grid-cols-5 gap-3 mt-3">
-                    {MEMOS.slice(
-                      memoPage * MEMOS_PER_PAGE,
-                      (memoPage + 1) * MEMOS_PER_PAGE,
-                    ).map((memo) => (
-                      <div
-                        key={memo.id}
-                        className="rounded-xl p-3 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
-                        style={{
-                          backgroundColor: memo.color,
-                          boxShadow: "2px 2px 6px rgba(0,0,0,0.08)",
-                          minHeight: "130px",
-                        }}
-                      >
-                        <div
-                          className="w-8 h-2.5 rounded-sm mx-auto -mt-1 mb-2 opacity-60"
-                          style={{
-                            backgroundColor: memo.color,
-                            filter: "brightness(0.85)",
-                          }}
-                        />
-                        <div className="text-[11px] font-bold text-gray-700 mb-1.5 truncate">
-                          {memo.title}
-                        </div>
-                        <div className="text-[11px] text-gray-600 whitespace-pre-line leading-relaxed line-clamp-6">
-                          {memo.text}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Pagination
-                    page={memoPage}
-                    total={Math.ceil(MEMOS.length / MEMOS_PER_PAGE)}
-                    onChange={setMemoPage}
-                  />
-                </div>
-              )} */}
-
-              {/* ══ DIARY ══ */}
-              {activeTab === "diary" && <DiaryTab />}
-
-              {/* ══ GUESTBOOK ══ */}
-              {activeTab === "guestbook" && (
-                <div className="space-y-5">
-                  {/* Header banner */}
-                  <div
-                    className="rounded-xl p-4 text-center"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #fff3b0 0%, #ffc8dd 50%, #c9c9ff 100%)",
-                    }}
-                  >
-                    <div className="text-2xl mb-1">💌</div>
-                    <h2
-                      className="text-base font-bold text-foreground/80"
-                      style={{ fontFamily: "'Gowun Batang', serif" }}
-                    >
-                      봄이네 방명록
-                    </h2>
-                    <p className="text-xs text-foreground/60 mt-0.5">
-                      따뜻한 한마디 남겨주세요 🌸
-                    </p>
-                  </div>
-
-                  {/* Write form */}
-                  <div
-                    className="rounded-xl p-4 border border-border"
-                    style={{ background: "var(--secondary)" }}
-                  >
-                    <h4 className="text-sm font-semibold text-foreground mb-3">
-                      ✏️ 글 남기기
-                    </h4>
-                    <input
-                      type="text"
-                      placeholder="이름 또는 닉네임"
-                      value={gbForm.author}
-                      onChange={(e) =>
-                        setGbForm({ ...gbForm, author: e.target.value })
-                      }
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors mb-2"
-                      style={{
-                        background: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                      }}
-                      onFocus={(e) =>
-                        (e.target.style.borderColor = "var(--primary)")
-                      }
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = "var(--border)")
-                      }
-                    />
-                    <textarea
-                      placeholder="방명록을 남겨주세요 🌸"
-                      value={gbForm.message}
-                      onChange={(e) =>
-                        setGbForm({ ...gbForm, message: e.target.value })
-                      }
-                      className="w-full rounded-lg px-3 py-2 text-sm resize-none outline-none transition-colors"
-                      style={{
-                        background: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                      }}
-                      rows={3}
-                      onFocus={(e) =>
-                        (e.target.style.borderColor = "var(--primary)")
-                      }
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = "var(--border)")
-                      }
-                    />
-                    <div className="flex justify-end mt-2">
-                      <button
-                        onClick={submitGuestbook}
-                        className="px-4 py-1.5 text-sm rounded-lg transition-opacity hover:opacity-85"
-                        style={{
-                          background: "var(--primary)",
-                          color: "var(--primary-foreground)",
-                        }}
-                      >
-                        남기기
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Entries */}
-                  <div className="space-y-3">
-                    {guestbook
-                      .slice(gbPage * GB_PER_PAGE, (gbPage + 1) * GB_PER_PAGE)
-                      .map((entry) => (
-                        <div
-                          key={entry.id}
-                          className="rounded-xl p-4 border border-border/40"
-                          style={{ background: entry.color + "55" }}
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <div
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0"
-                              style={{ background: entry.color }}
-                            >
-                              {entry.avatar}
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold text-foreground">
-                                {entry.author}
-                              </div>
-                              <div className="text-[10px] text-muted-foreground">
-                                {entry.date}
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-sm text-foreground leading-relaxed pl-10">
-                            {entry.message}
-                          </p>
-                        </div>
-                      ))}
-                  </div>
-                  <Pagination
-                    page={gbPage}
-                    total={Math.ceil(guestbook.length / GB_PER_PAGE)}
-                    onChange={setGbPage}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+  if (isLoading)
+    return (
+      <div className="flex h-screen items-center justify-center">
+        로딩 중...
       </div>
-    </div>
+    );
+
+  return (
+    <Router>
+      <Routes>
+        {/* 🌟 핵심 조건문 라우팅 
+          로그인 안했으면 랜딩(메인)페이지, 로그인 했으면 본인 홈(스페이스)으로 연결 
+        */}
+        <Route
+          path="/"
+          element={
+            isLoggedIn ? (
+              <MySpacePage setIsLoggedIn={setIsLoggedIn} />
+            ) : (
+              <LandingPage />
+            )
+          }
+        />
+
+        {/* 로그인 및 회원가입 페이지 */}
+        <Route
+          path="/login"
+          element={
+            <LoginPage setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
+          }
+        />
+        <Route path="/signup" element={<SignupPage />} />
+
+        {/* 잘못된 경로 접근 시 루트로 이동 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 }
 
