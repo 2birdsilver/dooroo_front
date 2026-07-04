@@ -576,21 +576,7 @@ export default function App() {
               )}
 
               {/* ══ DIARY ══ */}
-              {activeTab === "diary" && (
-                <DiaryTab
-                  calMonth={calMonth}
-                  firstDay={firstDay}
-                  daysInMonth={daysInMonth}
-                  selectedDate={selectedDate}
-                  selectedDiary={selectedDiary}
-                  diaryDates={DIARY_DATES}
-                  setCalMonth={setCalMonth}
-                  setSelectedDate={setSelectedDate}
-                  navigateDay={navigateDay}
-                  formatDate={formatDate}
-                  formatDisplayDate={formatDisplayDate}
-                />
-              )}
+              {activeTab === "diary" && <DiaryTab />}
 
               {/* ══ GUESTBOOK ══ */}
               {activeTab === "guestbook" && (
