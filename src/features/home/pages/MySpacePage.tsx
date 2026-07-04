@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DIARY_ENTRIES } from "../../../mocks/mockData";
 import DiaryTab from "../../diary/components/DiaryTab";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../user/context/AuthContext";
 
 // type Tab = "home" | "memo" | "diary" | "guestbook";
 type Tab = "home" | "diary" | "guestbook";
@@ -218,13 +219,14 @@ interface MySpacePageProps {
 
 // ── main component ────────────────────────────────────────────────────────────
 
-const MySpacePage = ({ setIsLoggedIn }: MySpacePageProps) => {
+const MySpacePage = () => {
+  const { user, token, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     // 💡 로그아웃 시 토큰 지우고 상태값 변경
     localStorage.removeItem("token");
-    setIsLoggedIn(false);
+    logout();
     navigate("/"); // 첫 페이지로 튕겨내기
   };
 
@@ -333,12 +335,12 @@ const MySpacePage = ({ setIsLoggedIn }: MySpacePageProps) => {
                 </div>
                 <h2
                   className="text-sm font-semibold text-foreground"
-                  style={{ fontFamily: "'Gowun Batang', serif" }}
+                  style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
                 >
-                  봄이네 공간
+                  <span className="">{user?.nickname}</span>
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  @bom_space
+                  {user?.email}
                 </p>
               </div>
 
@@ -346,7 +348,7 @@ const MySpacePage = ({ setIsLoggedIn }: MySpacePageProps) => {
               <div className="grid grid-cols-3 gap-1.5 mb-4">
                 {[
                   ["36", "일기"],
-                  ["10", "메모"],
+                  // ["10", "메모"],
                   ["5", "방명록"],
                 ].map(([v, l]) => (
                   <div

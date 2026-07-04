@@ -8,7 +8,7 @@ interface LoginPageProps {
   isLoggedIn: boolean;
 }
 
-const LoginPage = ({ setIsLoggedIn, isLoggedIn }: LoginPageProps) => {
+const LoginPage = () => {
   const { login } = useAuth(); // Context에서 login 함수 가져오기
 
   const navigate = useNavigate();
@@ -16,21 +16,18 @@ const LoginPage = ({ setIsLoggedIn, isLoggedIn }: LoginPageProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
   // 이미 로그인한 상태라면 메인(/)으로 튕겨냄
-  if (isLoggedIn) return <Navigate to="/" replace />;
+  if (useAuth().isAuthenticated) return <Navigate to="/" replace />;
 
   /*
   테스트 로그인
   */
-  const handleTestLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const fakeToken = "jwt-mock-token-abc";
-    localStorage.setItem("token", fakeToken);
-
-    // 상태값 변경 ➡️ 이 순간 App.jsx가 감지해서 화면을 MySpace로 변경합니다!
-    setIsLoggedIn(true);
+  const handleTestLoginSubmit = async () => {
+    const data = await loginUser({
+      email: "test@naver.com",
+      password: "test",
+    });
+    login(data.token, data.user);
     navigate("/");
   };
 
@@ -40,11 +37,9 @@ const LoginPage = ({ setIsLoggedIn, isLoggedIn }: LoginPageProps) => {
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const loginToken = await loginUser({ email, password });
-    localStorage.setItem("token", loginToken.token);
-
-    // 상태값 변경 ➡️ 이 순간 App.jsx가 감지해서 화면을 MySpace로 변경합니다!
-    setIsLoggedIn(true);
+    const data = await loginUser({ email, password });
+    // Context 로그인 함수 실행 -> 상태 저장 및 로컬스토리지 저장 일괄 처리
+    login(data.token, data.user);
     navigate("/");
   };
 
@@ -112,7 +107,7 @@ const LoginPage = ({ setIsLoggedIn, isLoggedIn }: LoginPageProps) => {
         {/* 기존 테스트 로그인 버튼 (type="button"으로 지정해서 폼 제출을 방지하고 별도 핸들러를 연결하는 것을 추천합니다) */}
         <button
           type="button"
-          onClick={() => handleTestLoginSubmit}
+          onClick={handleTestLoginSubmit}
           className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-colors text-sm text-center"
         >
           테스트 로그인 (클릭 시 진입 가능)

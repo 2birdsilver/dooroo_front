@@ -13,7 +13,7 @@ import MySpacePage from "../features/home/pages/MySpacePage";
 import LoginPage from "../features/user/pages/LoginPage";
 import LandingPage from "../features/user/pages/LandingPage";
 import SignupPage from "../features/user/pages/SignupPage";
-import { AuthProvider } from "../features/user/context/AuthContext";
+import { AuthProvider, useAuth } from "../features/user/context/AuthContext";
 
 // type Tab = "home" | "memo" | "diary" | "guestbook";
 type Tab = "home" | "diary" | "guestbook";
@@ -225,7 +225,9 @@ const TODAY = new Date(2026, 5, 30);
 
 // ── main component ────────────────────────────────────────────────────────────
 
-export default function App() {
+const AppRoutes = () => {
+  const { isAuthenticated } = useAuth();
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -319,42 +321,39 @@ export default function App() {
     );
 
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          {/* 🌟 핵심 조건문 라우팅 
-          로그인 안했으면 랜딩(메인)페이지, 로그인 했으면 본인 홈(스페이스)으로 연결 
-        */}
-          <Route
-            path="/"
-            element={
-              isLoggedIn ? (
-                <MySpacePage setIsLoggedIn={setIsLoggedIn} />
-              ) : (
-                <LandingPage />
-              )
-            }
-          />
+    <Routes>
+      {/* 🌟 핵심 조건문 라우팅 
+          이제 전역 로그인 상태(isAuthenticated)에 따라 실시간으로 화면이 바뀝니다.
+      */}
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <MySpacePage /> // 💡 복잡하게 상태 전달(setIsLoggedIn) 함수를 프롭스로 넘길 필요가 없어집니다!
+          ) : (
+            <LandingPage />
+          )
+        }
+      />
 
-          {/* 로그인 및 회원가입 페이지 */}
-          <Route
-            path="/login"
-            element={
-              <LoginPage
-                setIsLoggedIn={setIsLoggedIn}
-                isLoggedIn={isLoggedIn}
-              />
-            }
-          />
-          <Route path="/signup" element={<SignupPage />} />
+      {/* 로그인 및 회원가입 페이지 */}
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace /> // 이미 로그인했다면 메인(스페이스)으로 튕겨내기
+          ) : (
+            <LoginPage />
+          )
+        }
+      />
+      <Route path="/signup" element={<SignupPage />} />
 
-          {/* 잘못된 경로 접근 시 루트로 이동 */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+      {/* 잘못된 경로 접근 시 루트로 이동 */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
-}
+};
 
 // ── small helper components ───────────────────────────────────────────────────
 
@@ -416,3 +415,15 @@ function Pagination({
     </div>
   );
 }
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </Router>
+  );
+}
+
+export default App;
