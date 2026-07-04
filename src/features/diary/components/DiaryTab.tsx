@@ -12,9 +12,32 @@ import { diaryApi } from "../api/diaryApi";
 const DiaryTab = () => {
   const [isWriting, setIsWriting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calMonth, setCalMonth] = useState(new Date());
+
+  // API로부터 받아온 실제 일기 데이터를 저장할 상태관리
+  const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const formatDate = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate(),
+    ).padStart(2, "0")}`;
+
+  // 💡 일기 데이터를 다시 불러오는 함수 (삭제 성공 후 호출용)
+  const loadDiary = async () => {
+    setLoading(true);
+    try {
+      const dateStr = formatDate(selectedDate);
+      const data = await diaryApi.getDiaryByDate(10, dateStr);
+      setSelectedDiary(data);
+    } catch (error) {
+      console.error(error);
+      setSelectedDiary(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const firstDay = new Date(
     calMonth.getFullYear(),
@@ -27,11 +50,6 @@ const DiaryTab = () => {
     calMonth.getMonth() + 1,
     0,
   ).getDate();
-
-  const formatDate = (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-      date.getDate(),
-    ).padStart(2, "0")}`;
 
   const formatDisplayDate = (date: Date) =>
     `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
@@ -50,10 +68,6 @@ const DiaryTab = () => {
       setCalMonth(new Date(next.getFullYear(), next.getMonth(), 1));
     }
   };
-
-  // API로부터 받아온 실제 일기 데이터를 저장할 상태관리
-  const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadDiary = async () => {
@@ -75,21 +89,6 @@ const DiaryTab = () => {
 
     loadDiary();
   }, [selectedDate]); // 💡 selectedDate가 바뀔 때마다 서버를 찔러 데이터를 가져옴
-
-  // 💡 일기 데이터를 다시 불러오는 함수 (삭제 성공 후 호출용)
-  const loadDiary = async () => {
-    setLoading(true);
-    try {
-      const dateStr = formatDate(selectedDate);
-      const data = await diaryApi.getDiaryByDate(10, dateStr);
-      setSelectedDiary(data);
-    } catch (error) {
-      console.error(error);
-      setSelectedDiary(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     loadDiary();
@@ -116,6 +115,7 @@ const DiaryTab = () => {
         <DiaryWrite
           selectedDate={selectedDate}
           onCancel={() => setIsWriting(false)}
+          onSuccess={loadDiary}
         />
       ) : (
         <div className="space-y-5">
@@ -156,7 +156,6 @@ const DiaryTab = () => {
                     onClick={() => {
                       // 수정 모드 진입 로직 (예: setIsWriting(true)와 기작성 데이터 주입 등)
                       setIsEditing(true);
-                      alert("수정 기능 연결 위치");
                     }}
                     className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                   >

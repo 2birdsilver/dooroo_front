@@ -8,8 +8,11 @@ interface Props {
   selectedDate: Date; // 💡 선택된 날짜를 DiaryWrite에 전달
 }
 
-const formatDate = (date: Date): string => {
-  return date.toISOString().split("T")[0];
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`; // "2026-08-15" 생성
 };
 
 const DiaryWrite = ({ selectedDate, onCancel, onSuccess }: Props) => {
@@ -40,7 +43,7 @@ const DiaryWrite = ({ selectedDate, onCancel, onSuccess }: Props) => {
       await diaryApi.createDiary({
         userId: currentUserId,
         spaceId: currentSpaceId,
-        diaryDate: formatDate(selectedDate), // "2026-07-04" 형식
+        diaryDate: getLocalDateString(selectedDate), // "2026-07-04" 형식
         title: title,
         content: content, // 에디터에서 수집된 HTML 스트링
       });
