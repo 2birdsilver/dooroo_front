@@ -114,8 +114,18 @@ const DiaryTab = () => {
       {isWriting ? (
         <DiaryWrite
           selectedDate={selectedDate}
-          onCancel={() => setIsWriting(false)}
-          onSuccess={loadDiary}
+          initialData={isEditing ? selectedDiary : null}
+          onCancel={
+            () => {
+              setIsWriting(false);
+              setIsEditing(false);
+            } // 취소 시 수정 모드도 해제
+          }
+          onSuccess={() => {
+            setIsWriting(false);
+            setIsEditing(false);
+            loadDiary();
+          }}
         />
       ) : (
         <div className="space-y-5">
@@ -154,8 +164,8 @@ const DiaryTab = () => {
                 <>
                   <button
                     onClick={() => {
-                      // 수정 모드 진입 로직 (예: setIsWriting(true)와 기작성 데이터 주입 등)
                       setIsEditing(true);
+                      setIsWriting(true);
                     }}
                     className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                   >
