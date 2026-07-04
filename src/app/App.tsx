@@ -3,7 +3,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import DiaryTab from "../features/diary/components/DiaryTab";
 import { DIARY_ENTRIES } from "../mocks/mockData";
 
-type Tab = "home" | "memo" | "diary" | "guestbook";
+// type Tab = "home" | "memo" | "diary" | "guestbook";
+type Tab = "home" | "diary" | "guestbook";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -204,7 +205,6 @@ const INITIAL_GUESTBOOK = [
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "home", label: "홈" },
-  { id: "memo", label: "메모" },
   { id: "diary", label: "일기" },
   { id: "guestbook", label: "방명록" },
 ];

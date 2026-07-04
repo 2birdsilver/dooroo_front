@@ -11,6 +11,7 @@ import { diaryApi } from "../api/diaryApi";
 
 const DiaryTab = () => {
   const [isWriting, setIsWriting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calMonth, setCalMonth] = useState(new Date());
@@ -75,10 +76,47 @@ const DiaryTab = () => {
     loadDiary();
   }, [selectedDate]); // 💡 selectedDate가 바뀔 때마다 서버를 찔러 데이터를 가져옴
 
+  // 💡 일기 데이터를 다시 불러오는 함수 (삭제 성공 후 호출용)
+  const loadDiary = async () => {
+    setLoading(true);
+    try {
+      const dateStr = formatDate(selectedDate);
+      const data = await diaryApi.getDiaryByDate(10, dateStr);
+      setSelectedDiary(data);
+    } catch (error) {
+      console.error(error);
+      setSelectedDiary(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDiary();
+  }, [selectedDate]);
+
+  // 💡 삭제 버튼 클릭 핸들러 예시
+  const handleDelete = async () => {
+    if (!selectedDiary) return;
+    if (!window.confirm("정말로 이 일기를 삭제하시겠습니까?")) return;
+
+    try {
+      await diaryApi.deleteDiary(selectedDiary.id);
+      alert("일기가 삭제되었습니다.");
+      loadDiary(); // 💡 삭제 후 데이터 다시 조회 (화면 자동 갱신)
+    } catch (error) {
+      console.error(error);
+      alert("일기 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <>
       {isWriting ? (
-        <DiaryWrite onCancel={() => setIsWriting(false)} />
+        <DiaryWrite
+          selectedDate={selectedDate}
+          onCancel={() => setIsWriting(false)}
+        />
       ) : (
         <div className="space-y-5">
           <DiaryCalendar
@@ -100,14 +138,40 @@ const DiaryTab = () => {
 
           <DiaryContent diary={selectedDiary} />
 
-          <div className="flex justify-end">
-            <button
-              onClick={() => setIsWriting(true)}
-              className="px-4 py-2 rounded-lg bg-primary text-white"
-            >
-              작성하기
-            </button>
-          </div>
+          {/* 하단 버튼 영역 */}
+          {!loading && (
+            <div className="flex justify-end gap-2">
+              {/* 💡 조건 A: 일기가 없을 때만 '작성하기' 표출 */}
+              {selectedDiary === null ? (
+                <button
+                  onClick={() => setIsWriting(true)}
+                  className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors"
+                >
+                  작성하기
+                </button>
+              ) : (
+                /* 💡 조건 B: 일기가 존재할 때만 '수정', '삭제' 표출 */
+                <>
+                  <button
+                    onClick={() => {
+                      // 수정 모드 진입 로직 (예: setIsWriting(true)와 기작성 데이터 주입 등)
+                      setIsEditing(true);
+                      alert("수정 기능 연결 위치");
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                  >
+                    삭제
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
     </>
