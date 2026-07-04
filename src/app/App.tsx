@@ -7,11 +7,13 @@ import {
   Routes,
   Route,
   Navigate,
+  BrowserRouter,
 } from "react-router-dom";
-import MySpacePage from "../features/user/pages/MySpacePage";
+import MySpacePage from "../features/home/pages/MySpacePage";
 import LoginPage from "../features/user/pages/LoginPage";
 import LandingPage from "../features/user/pages/LandingPage";
 import SignupPage from "../features/user/pages/SignupPage";
+import { AuthProvider } from "../features/user/context/AuthContext";
 
 // type Tab = "home" | "memo" | "diary" | "guestbook";
 type Tab = "home" | "diary" | "guestbook";
@@ -318,33 +320,38 @@ export default function App() {
 
   return (
     <Router>
-      <Routes>
-        {/* 🌟 핵심 조건문 라우팅 
+      <AuthProvider>
+        <Routes>
+          {/* 🌟 핵심 조건문 라우팅 
           로그인 안했으면 랜딩(메인)페이지, 로그인 했으면 본인 홈(스페이스)으로 연결 
         */}
-        <Route
-          path="/"
-          element={
-            isLoggedIn ? (
-              <MySpacePage setIsLoggedIn={setIsLoggedIn} />
-            ) : (
-              <LandingPage />
-            )
-          }
-        />
+          <Route
+            path="/"
+            element={
+              isLoggedIn ? (
+                <MySpacePage setIsLoggedIn={setIsLoggedIn} />
+              ) : (
+                <LandingPage />
+              )
+            }
+          />
 
-        {/* 로그인 및 회원가입 페이지 */}
-        <Route
-          path="/login"
-          element={
-            <LoginPage setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
-          }
-        />
-        <Route path="/signup" element={<SignupPage />} />
+          {/* 로그인 및 회원가입 페이지 */}
+          <Route
+            path="/login"
+            element={
+              <LoginPage
+                setIsLoggedIn={setIsLoggedIn}
+                isLoggedIn={isLoggedIn}
+              />
+            }
+          />
+          <Route path="/signup" element={<SignupPage />} />
 
-        {/* 잘못된 경로 접근 시 루트로 이동 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* 잘못된 경로 접근 시 루트로 이동 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { loginUser } from "../api/user";
+import { useAuth } from "../context/AuthContext";
 
 interface LoginPageProps {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -8,6 +9,8 @@ interface LoginPageProps {
 }
 
 const LoginPage = ({ setIsLoggedIn, isLoggedIn }: LoginPageProps) => {
+  const { login } = useAuth(); // Context에서 login 함수 가져오기
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");

@@ -1,3 +1,5 @@
+import { UserInfo } from "../context/AuthContext";
+
 // 💡 회원가입 요청 데이터 구조 정의
 interface SignupData {
   email: string;
@@ -44,7 +46,7 @@ export const registerUser = async (signUpData: SignupData): Promise<void> => {
 // 백엔드 서버에 로그인 요청을 보내고 토큰을 반환하는 함수
 export const loginUser = async (
   loginData: LoginData,
-): Promise<{ token: string }> => {
+): Promise<{ token: string; user: UserInfo }> => {
   const response = await fetch(`${USER_URL}/login`, {
     method: "POST",
     headers: {
