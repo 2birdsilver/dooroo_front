@@ -30,6 +30,18 @@ export const diaryApi = {
     return response.json();
   },
 
+  // 날짜별 일기 목록 조회
+  getDiaryDatesByMonth: async (
+    year: number,
+    month: number,
+  ): Promise<string[]> => {
+    const response = await fetch(
+      `${DIARY_URL}/dates?year=${year}&month=${month}`,
+    );
+    if (!response.ok) throw new Error("일기 목록 조회 실패");
+    return response.json();
+  },
+
   // 각 스페이스에 따른 날짜별 일기 조회
   getDiaryByDate: async (spaceId: number, date: string): Promise<Diary> => {
     const response = await fetch(`${DIARY_URL}/space/${spaceId}/date/${date}`);

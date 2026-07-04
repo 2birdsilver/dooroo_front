@@ -216,7 +216,9 @@ const TODAY = new Date(2026, 5, 30);
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedDate, setSelectedDate] = useState(TODAY);
-  const [calMonth, setCalMonth] = useState(new Date(2026, 5, 1));
+  const [calMonth, setCalMonth] = useState(
+    new Date(TODAY.getFullYear(), TODAY.getMonth(), 1),
+  );
   const [guestbook, setGuestbook] = useState(INITIAL_GUESTBOOK);
   const [gbForm, setGbForm] = useState({ author: "", message: "" });
   const [bio, setBio] = useState(
@@ -576,21 +578,7 @@ export default function App() {
               )}
 
               {/* ══ DIARY ══ */}
-              {activeTab === "diary" && (
-                <DiaryTab
-                  calMonth={calMonth}
-                  firstDay={firstDay}
-                  daysInMonth={daysInMonth}
-                  selectedDate={selectedDate}
-                  selectedDiary={selectedDiary}
-                  diaryDates={DIARY_DATES}
-                  setCalMonth={setCalMonth}
-                  setSelectedDate={setSelectedDate}
-                  navigateDay={navigateDay}
-                  formatDate={formatDate}
-                  formatDisplayDate={formatDisplayDate}
-                />
-              )}
+              {activeTab === "diary" && <DiaryTab />}
 
               {/* ══ GUESTBOOK ══ */}
               {activeTab === "guestbook" && (
