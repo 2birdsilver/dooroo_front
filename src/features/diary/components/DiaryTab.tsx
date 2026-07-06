@@ -5,11 +5,15 @@ import DiaryContent from "./DiaryContent";
 import DiaryNavigator from "./DiaryNavigator";
 import DiaryWrite from "./DiaryWrite";
 
-import { DIARY_ENTRIES } from "../../../mocks/mockData";
 import { Diary } from "../types/diary";
 import { diaryApi } from "../api/diaryApi";
 
-const DiaryTab = () => {
+interface DiaryTabProps {
+  isOwner: boolean; // 스페이스 주인 여부를 prop으로 받음
+  spaceId: number; // 스페이스 ID를 prop으로 받음
+}
+
+const DiaryTab = ({ isOwner, spaceId }: DiaryTabProps) => {
   const [isWriting, setIsWriting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -19,17 +23,37 @@ const DiaryTab = () => {
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // 달력 점 마킹용 데이터 상태
+  const [diaryDates, setDiaryDates] = useState<Set<string>>(new Set());
+
   const formatDate = (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
       date.getDate(),
     ).padStart(2, "0")}`;
 
-  // 💡 일기 데이터를 다시 불러오는 함수 (삭제 성공 후 호출용)
+  // 💡 특정 연/월의 일기 작성일 목록을 가져오는 함수 (그대로 유지)
+  const fetchMonthlyDiaryDates = async (date: Date) => {
+    try {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1; // 0~11로 나오므로 +1
+
+      const activeDates: string[] = await diaryApi.getDiaryDatesByMonth(
+        year,
+        month,
+        spaceId,
+      );
+      setDiaryDates(new Set(activeDates));
+    } catch (error) {
+      console.error("월별 일기 목록 조회 실패:", error);
+    }
+  };
+
+  // 💡 일기 상세 데이터를 조회하는 함수
   const loadDiary = async () => {
     setLoading(true);
     try {
       const dateStr = formatDate(selectedDate);
-      const data = await diaryApi.getDiaryByDate(10, dateStr);
+      const data = await diaryApi.getDiaryByDate(spaceId, dateStr);
       setSelectedDiary(data);
     } catch (error) {
       console.error(error);
@@ -69,32 +93,25 @@ const DiaryTab = () => {
     }
   };
 
-  useEffect(() => {
-    const loadDiary = async () => {
-      setLoading(true);
-      try {
-        const dateStr = formatDate(selectedDate); // 예: "2026-07-04"
-
-        // 💡 분리된 diaryApi를 사용하여 날짜 기반 fetch 호출 실행
-        const data = await diaryApi.getDiaryByDate(10, dateStr);
-
-        setSelectedDiary(data); // 찾은 일기 데이터를 주입 (없으면 null)
-      } catch (error) {
-        console.error(error);
-        setSelectedDiary(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDiary();
-  }, [selectedDate]); // 💡 selectedDate가 바뀔 때마다 서버를 찔러 데이터를 가져옴
-
+  // 💡 [수정] 1. 선택된 날짜(일)가 바뀔 때 마다 일기 상세 정보 불러오기
   useEffect(() => {
     loadDiary();
   }, [selectedDate]);
 
-  // 💡 삭제 버튼 클릭 핸들러 예시
+  // 💡 [추가] 2. 달력의 월(Month)이 바뀔 때 마다 해당하는 월의 점 데이터 새로 고치기!
+  useEffect(() => {
+    fetchMonthlyDiaryDates(calMonth);
+  }, [calMonth]);
+
+  // 💡 [수정] 일기 작성/수정 완료 및 삭제 시 일기 상세 정보와 달력의 점도 실시간 업데이트
+  const handleUpdateSuccess = () => {
+    setIsWriting(false);
+    setIsEditing(false);
+    loadDiary();
+    fetchMonthlyDiaryDates(calMonth); // 💡 새로고침 추가로 점 즉시 반영
+  };
+
+  // 💡 삭제 버튼 클릭 핸들러
   const handleDelete = async () => {
     if (!selectedDiary) return;
     if (!window.confirm("정말로 이 일기를 삭제하시겠습니까?")) return;
@@ -102,7 +119,8 @@ const DiaryTab = () => {
     try {
       await diaryApi.deleteDiary(selectedDiary.id);
       alert("일기가 삭제되었습니다.");
-      loadDiary(); // 💡 삭제 후 데이터 다시 조회 (화면 자동 갱신)
+      loadDiary();
+      fetchMonthlyDiaryDates(calMonth); // 💡 삭제 후 점 즉시 제거 반영
     } catch (error) {
       console.error(error);
       alert("일기 삭제 중 오류가 발생했습니다.");
@@ -115,17 +133,11 @@ const DiaryTab = () => {
         <DiaryWrite
           selectedDate={selectedDate}
           initialData={isEditing ? selectedDiary : null}
-          onCancel={
-            () => {
-              setIsWriting(false);
-              setIsEditing(false);
-            } // 취소 시 수정 모드도 해제
-          }
-          onSuccess={() => {
+          onCancel={() => {
             setIsWriting(false);
             setIsEditing(false);
-            loadDiary();
           }}
+          onSuccess={handleUpdateSuccess}
         />
       ) : (
         <div className="space-y-5">
@@ -134,7 +146,7 @@ const DiaryTab = () => {
             firstDay={firstDay}
             daysInMonth={daysInMonth}
             selectedDate={selectedDate}
-            diaryDates={new Set(Object.keys(DIARY_ENTRIES))}
+            diaryDates={diaryDates}
             setCalMonth={setCalMonth}
             setSelectedDate={setSelectedDate}
             formatDate={formatDate}
@@ -149,9 +161,8 @@ const DiaryTab = () => {
           <DiaryContent diary={selectedDiary} />
 
           {/* 하단 버튼 영역 */}
-          {!loading && (
+          {!loading && isOwner && (
             <div className="flex justify-end gap-2">
-              {/* 💡 조건 A: 일기가 없을 때만 '작성하기' 표출 */}
               {selectedDiary === null ? (
                 <button
                   onClick={() => setIsWriting(true)}
@@ -160,7 +171,6 @@ const DiaryTab = () => {
                   작성하기
                 </button>
               ) : (
-                /* 💡 조건 B: 일기가 존재할 때만 '수정', '삭제' 표출 */
                 <>
                   <button
                     onClick={() => {

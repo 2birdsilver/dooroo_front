@@ -27,11 +27,15 @@ const DiaryCalendar = ({
     <div className="rounded-xl p-4" style={{ background: "var(--secondary)" }}>
       <div className="flex items-center justify-between mb-3">
         <button
-          onClick={() =>
-            setCalMonth(
-              new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1),
-            )
-          }
+          onClick={() => {
+            const dayInPrevMonth = new Date(
+              calMonth.getFullYear(),
+              calMonth.getMonth() - 1,
+              1,
+            );
+            setCalMonth(dayInPrevMonth);
+            setSelectedDate(dayInPrevMonth);
+          }}
           className="p-1 rounded-lg hover:bg-muted transition-colors"
         >
           <ChevronLeft size={15} style={{ color: "var(--muted-foreground)" }} />
@@ -42,11 +46,15 @@ const DiaryCalendar = ({
         </h3>
 
         <button
-          onClick={() =>
-            setCalMonth(
-              new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1),
-            )
-          }
+          onClick={() => {
+            const dayInNextMonth = new Date(
+              calMonth.getFullYear(),
+              calMonth.getMonth() + 1,
+              1,
+            );
+            setCalMonth(dayInNextMonth);
+            setSelectedDate(dayInNextMonth);
+          }}
           className="p-1 rounded-lg hover:bg-muted transition-colors"
         >
           <ChevronRight
