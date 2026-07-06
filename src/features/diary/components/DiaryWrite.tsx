@@ -23,13 +23,17 @@ const DiaryWrite = ({
   onCancel,
   onSuccess,
 }: Props) => {
+  const spaceId = localStorage.getItem("spaceId");
+  const user = localStorage.getItem("user");
+  const userId = user ? JSON.parse(user).id : null;
+
   const [title, setTitle] = useState(initialData?.title || ""); // 💡 수정 모드일 때 기존 제목 세팅
   const [content, setContent] = useState(initialData?.content || ""); // 💡 수정 모드일 때 기존 내용 세팅
   const [loading, setLoading] = useState(false);
 
   // 현재 유저 및 스페이스 정보 세팅 (실제 환경에 맞게 토큰이나 Context 주입 필요)
-  const currentUserId = 1;
-  const currentSpaceId = 10;
+  const currentUserId = userId;
+  const currentSpaceId = spaceId;
   const isEditMode = !!initialData;
 
   // 저장 버튼 핸들러
@@ -60,7 +64,7 @@ const DiaryWrite = ({
         // 💡 API 호출하여 데이터 등록
         await diaryApi.createDiary({
           userId: currentUserId,
-          spaceId: currentSpaceId,
+          spaceId: currentSpaceId ? parseInt(currentSpaceId) : 0,
           diaryDate: getLocalDateString(selectedDate), // "2026-07-04" 형식
           title: title,
           content: content, // 에디터에서 수집된 HTML 스트링

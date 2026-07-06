@@ -8,7 +8,12 @@ import DiaryWrite from "./DiaryWrite";
 import { Diary } from "../types/diary";
 import { diaryApi } from "../api/diaryApi";
 
-const DiaryTab = () => {
+interface DiaryTabProps {
+  isOwner: boolean; // 스페이스 주인 여부를 prop으로 받음
+  spaceId: number; // 스페이스 ID를 prop으로 받음
+}
+
+const DiaryTab = ({ isOwner, spaceId }: DiaryTabProps) => {
   const [isWriting, setIsWriting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -35,6 +40,7 @@ const DiaryTab = () => {
       const activeDates: string[] = await diaryApi.getDiaryDatesByMonth(
         year,
         month,
+        spaceId,
       );
       setDiaryDates(new Set(activeDates));
     } catch (error) {
@@ -47,7 +53,7 @@ const DiaryTab = () => {
     setLoading(true);
     try {
       const dateStr = formatDate(selectedDate);
-      const data = await diaryApi.getDiaryByDate(10, dateStr);
+      const data = await diaryApi.getDiaryByDate(spaceId, dateStr);
       setSelectedDiary(data);
     } catch (error) {
       console.error(error);

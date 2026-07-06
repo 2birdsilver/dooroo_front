@@ -221,9 +221,8 @@ interface SpacePageProps {
 
 const SpacePage = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
-
-  // 로그인 시점에 저장해둔 나의 스페이스 ID (문자열 비교를 위해 똑같이 맞춰줌)
   const mySpaceId = localStorage.getItem("spaceId");
+  const numericSpaceId = spaceId ? Number(spaceId) : mySpaceId;
 
   // ⭐️ 핵심: 현재 가있는 공간이 "내 공간"인지 판별하는 스위치
   const isOwner = spaceId === mySpaceId;
@@ -612,7 +611,9 @@ const SpacePage = () => {
               )} */}
 
               {/* ══ DIARY ══ */}
-              {activeTab === "diary" && <DiaryTab />}
+              {activeTab === "diary" && (
+                <DiaryTab isOwner={isOwner} spaceId={numericSpaceId} />
+              )}
 
               {/* ══ GUESTBOOK ══ */}
               {activeTab === "guestbook" && (
