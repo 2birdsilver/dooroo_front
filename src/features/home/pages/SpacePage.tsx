@@ -5,7 +5,6 @@ import DiaryTab from "../../diary/components/DiaryTab";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../user/context/AuthContext";
 
-// type Tab = "home" | "memo" | "diary" | "guestbook";
 type Tab = "home" | "diary" | "guestbook";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -25,28 +24,6 @@ function getDday(dateStr: string) {
   );
   if (diff === 0) return "D-day";
   return `D-${diff}`;
-}
-
-function getHeatmapWeeks() {
-  const today = new Date(2026, 5, 30);
-  // Start from Jan 1 of current year, anchored to the Sunday of that week
-  const jan1 = new Date(today.getFullYear(), 0, 1);
-  const start = new Date(jan1);
-  start.setDate(start.getDate() - start.getDay()); // rewind to Sunday
-  // End at the Saturday of the week containing today
-  const end = new Date(today);
-  end.setDate(end.getDate() + (6 - end.getDay()));
-  const weeks: Date[][] = [];
-  const cur = new Date(start);
-  while (cur <= end) {
-    const week: Date[] = [];
-    for (let i = 0; i < 7; i++) {
-      week.push(new Date(cur));
-      cur.setDate(cur.getDate() + 1);
-    }
-    weeks.push(week);
-  }
-  return weeks;
 }
 
 // ── static data ───────────────────────────────────────────────────────────────
@@ -95,69 +72,6 @@ const DIARY_DATES = new Set([
   "2026-06-25",
   "2026-06-30",
 ]);
-
-const MEMOS = [
-  {
-    id: 1,
-    color: "#fff3b0",
-    title: "오늘의 할 일",
-    text: "- 운동하기\n- 책 읽기 📚\n- 일기 쓰기\n- 산책 30분",
-  },
-  {
-    id: 2,
-    color: "#b5ead7",
-    title: "좋아하는 것들",
-    text: "☁️ 구름 구경\n🍵 따뜻한 차\n📚 독서\n🎵 잔잔한 음악",
-  },
-  {
-    id: 3,
-    color: "#ffd6a5",
-    title: "이번 달 목표",
-    text: "✅ 매일 일기 쓰기\n✅ 물 2L 마시기\n⬜ 새 취미 찾기\n⬜ 운동 10회",
-  },
-  {
-    id: 4,
-    color: "#c9c9ff",
-    title: "독서 리스트",
-    text: "- 채식주의자\n- 아몬드\n- 82년생 김지영\n- 달러구트 꿈 백화점",
-  },
-  {
-    id: 5,
-    color: "#ffc8dd",
-    title: "버킷리스트",
-    text: "🗾 일본 교토\n🌊 제주도\n🏔️ 설악산\n🎡 놀이공원",
-  },
-  {
-    id: 6,
-    color: "#ffcfd2",
-    title: "플레이리스트",
-    text: "🎵 밤편지 - 아이유\n🎵 Blueming\n🎵 가을아침\n🎵 어떻게 이별까지 사랑하겠어",
-  },
-  {
-    id: 7,
-    color: "#a0ced9",
-    title: "감사일기",
-    text: "오늘도 건강하게\n지낼 수 있어서\n감사합니다 🙏\n작은 것에도 감사",
-  },
-  {
-    id: 8,
-    color: "#dde5b6",
-    title: "요리 메모",
-    text: "🍳 계란밥 - 간장+참기름\n🍜 된장찌개 - 두부+버섯\n🍚 김치볶음밥\n🥗 샐러드 드레싱",
-  },
-  {
-    id: 9,
-    color: "#fec89a",
-    title: "시청 리스트",
-    text: "⭐ 이상한 변호사 우영우\n⭐ 응답하라 1988\n⬜ 나의 해방일지\n⬜ 슬기로운 의사생활",
-  },
-  {
-    id: 10,
-    color: "#e2ced0",
-    title: "오늘의 생각",
-    text: "아무것도 하지 않는\n시간도 필요해.\n쉬어가도 괜찮아 💜\n천천히 가도 돼",
-  },
-];
 
 const INITIAL_GUESTBOOK = [
   {
@@ -213,74 +127,55 @@ const TABS: { id: Tab; label: string }[] = [
 
 const TODAY = new Date(2026, 5, 30);
 
-interface SpacePageProps {
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 // ── main component ────────────────────────────────────────────────────────────
 
 const SpacePage = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
   const mySpaceId = localStorage.getItem("spaceId");
-  const numericSpaceId = spaceId ? Number(spaceId) : mySpaceId;
+  const numericSpaceId = Number(spaceId || mySpaceId || 0);
+  const isOwner = numericSpaceId == Number(mySpaceId);
 
-  // ⭐️ 핵심: 현재 가있는 공간이 "내 공간"인지 판별하는 스위치
-  const isOwner = spaceId === mySpaceId;
-
-  const { user, token, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // 💡 로그아웃 시 토큰 지우고 상태값 변경
     localStorage.removeItem("token");
     logout();
-    navigate("/"); // 첫 페이지로 튕겨내기
+    navigate("/");
   };
 
   const [activeTab, setActiveTab] = useState<Tab>("home");
-  const [selectedDate, setSelectedDate] = useState(TODAY);
-  const [calMonth, setCalMonth] = useState(
-    new Date(TODAY.getFullYear(), TODAY.getMonth(), 1),
-  );
   const [guestbook, setGuestbook] = useState(INITIAL_GUESTBOOK);
   const [gbForm, setGbForm] = useState({ author: "", message: "" });
   const [bio, setBio] = useState(
     "안녕하세요! 일상을 기록하는 것을 좋아하는 사람입니다. 📝\n따뜻한 차 한 잔과 함께하는 독서를 즐기고,\n오늘도 소소하지만 행복한 하루를 보내고 있어요. ☀️",
   );
   const [editingBio, setEditingBio] = useState(false);
-  const [memoPage, setMemoPage] = useState(0);
   const [gbPage, setGbPage] = useState(0);
 
-  const MEMOS_PER_PAGE = 10; // 5 per row × 2 rows
   const GB_PER_PAGE = 5;
 
-  const heatmapWeeks = getHeatmapWeeks();
+  const getYearWeeks = () => {
+    const currentYear = new Date().getFullYear();
+    const weeks = [];
+    let startDate = new Date(currentYear, 0, 1);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+    const endDate = new Date(currentYear, 11, 31);
+    endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
 
-  // calendar helpers
-  const daysInMonth = new Date(
-    calMonth.getFullYear(),
-    calMonth.getMonth() + 1,
-    0,
-  ).getDate();
-  const firstDay = new Date(
-    calMonth.getFullYear(),
-    calMonth.getMonth(),
-    1,
-  ).getDay();
-
-  const navigateDay = (dir: number) => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + dir);
-    setSelectedDate(d);
-    setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+    let current = new Date(startDate);
+    while (current <= endDate) {
+      const week = [];
+      for (let i = 0; i < 7; i++) {
+        week.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+      }
+      weeks.push(week);
+    }
+    return weeks;
   };
 
-  const formatDisplayDate = (date: Date) => {
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
-  };
-
-  const selectedDiary = DIARY_ENTRIES[formatDate(selectedDate)];
+  const yearlyHeatmapWeeks = getYearWeeks();
 
   const submitGuestbook = () => {
     if (!gbForm.author.trim() || !gbForm.message.trim()) return;
@@ -312,10 +207,11 @@ const SpacePage = () => {
 
   return (
     <div
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-background px-4 py-6 md:py-10"
       style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
     >
-      <header className="flex justify-between items-center mb-8 pb-4 border-b">
+      {/* Header max-w 매칭 및 패딩 처리 */}
+      <header className="max-w-5xl mx-auto flex justify-between items-center mb-6 md:mb-8 pb-4 border-b">
         <h2 className="text-xl font-bold">Dooroo</h2>
         <button
           onClick={handleLogout}
@@ -325,12 +221,13 @@ const SpacePage = () => {
         </button>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex gap-6 items-start">
+      <div className="max-w-5xl mx-auto">
+        {/* 모바일에서는 세로(flex-col), md(768px) 이상에서는 가로(flex-row) 배치 */}
+        <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* ── Left sidebar: Profile ── */}
-          <aside className="w-56 flex-shrink-0 sticky top-10">
+          {/* 모바일에서는 너비 전체(w-full), md 이상에선 기존 고정 크기(md:w-56) */}
+          <aside className="w-full md:w-56 flex-shrink-0 md:sticky md:top-10">
             <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
-              {/* Avatar */}
               <div className="flex flex-col items-center mb-4">
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-3 shadow-inner"
@@ -340,22 +237,17 @@ const SpacePage = () => {
                 >
                   🌸
                 </div>
-                <h2
-                  className="text-sm font-semibold text-foreground"
-                  style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
-                >
-                  <span className="">{user?.nickname}</span>
+                <h2 className="text-sm font-semibold text-foreground">
+                  <span>{user?.nickname}</span>
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {user?.email}
                 </p>
               </div>
 
-              {/* Stats */}
               <div className="grid grid-cols-3 gap-1.5 mb-4">
                 {[
                   ["36", "일기"],
-                  // ["10", "메모"],
                   ["5", "방명록"],
                 ].map(([v, l]) => (
                   <div
@@ -368,8 +260,7 @@ const SpacePage = () => {
                 ))}
               </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
+              <div className="flex flex-wrap justify-center md:justify-start gap-1 mb-4">
                 {["#일상기록", "#독서", "#홈카페", "#감성"].map((tag) => (
                   <span
                     key={tag}
@@ -382,14 +273,14 @@ const SpacePage = () => {
 
               <hr className="border-border mb-4" />
 
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
+              <div className="space-y-2 text-xs text-muted-foreground grid grid-cols-3 gap-2 md:block md:space-y-2">
+                <div className="flex items-center justify-center md:justify-start gap-2">
                   <span>📍</span> 서울, 대한민국
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center md:justify-start gap-2">
                   <span>🎂</span> 1998년생
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center md:justify-start gap-2">
                   <span>📅</span> 2022년 가입
                 </div>
               </div>
@@ -397,7 +288,7 @@ const SpacePage = () => {
           </aside>
 
           {/* ── Right content area ── */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             {/* Bookmark-style tabs */}
             <div className="flex gap-0.5 pl-1">
               {TABS.map((tab) => {
@@ -406,7 +297,7 @@ const SpacePage = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className="relative px-5 py-2 text-sm rounded-t-xl border border-border transition-all duration-150"
+                    className="relative px-4 py-2 text-xs md:text-sm rounded-t-xl border border-border transition-all duration-150"
                     style={{
                       background: active ? "var(--card)" : "var(--secondary)",
                       color: active
@@ -428,26 +319,27 @@ const SpacePage = () => {
 
             {/* Content panel */}
             <div
-              className="bg-card border border-border rounded-b-2xl rounded-tr-2xl p-6 shadow-sm"
+              className="bg-card border border-border rounded-b-2xl rounded-tr-2xl p-4 md:p-6 shadow-sm"
               style={{ position: "relative", zIndex: 5 }}
             >
               {/* ══ HOME ══ */}
               {activeTab === "home" && (
-                <div className="space-y-7">
+                <div className="space-y-6 md:space-y-7">
                   {/* Anniversaries */}
                   <section>
                     <SectionTitle>🎀 기념일</SectionTitle>
-                    <div className="grid grid-cols-3 gap-3">
+                    {/* 모바일에서는 1열 혹은 3열이 좁을 수 있으므로 grid-cols-1에서 md:grid-cols-3으로 변경 가능하지만, 항목이 작으므로 grid-cols-3 유지하되 모바일 패딩 축소 */}
+                    <div className="grid grid-cols-3 gap-2 md:grid-cols-3 md:gap-3">
                       {ANNIVERSARIES.map((a) => (
                         <div
                           key={a.label}
-                          className="bg-secondary rounded-xl p-3 text-center"
+                          className="bg-secondary rounded-xl p-2 md:p-3 text-center"
                         >
-                          <div className="text-[11px] text-muted-foreground mb-1">
+                          <div className="text-[10px] md:text-[11px] text-muted-foreground mb-1 truncate">
                             {a.label}
                           </div>
                           <div
-                            className="text-lg font-bold"
+                            className="text-base md:text-lg font-bold"
                             style={{
                               color: "var(--primary)",
                               fontFamily: "'Gowun Batang', serif",
@@ -455,7 +347,7 @@ const SpacePage = () => {
                           >
                             {getDday(a.date)}
                           </div>
-                          <div className="text-[10px] text-muted-foreground mt-1">
+                          <div className="text-[9px] md:text-[10px] text-muted-foreground mt-1 hidden sm:block">
                             {a.date}
                           </div>
                         </div>
@@ -466,65 +358,73 @@ const SpacePage = () => {
                   {/* Heatmap */}
                   <section>
                     <SectionTitle>📔 일기 기록</SectionTitle>
-                    <div className="bg-secondary/60 rounded-xl p-4 overflow-x-auto">
-                      {/* month labels */}
-                      <div className="flex gap-[3px] mb-1 pl-0">
-                        {heatmapWeeks.map((week, wi) => {
-                          const first = week.find((d) => d.getDate() === 1);
-                          return (
+                    {/* 모바일에서 365일 잔디는 다 들어갈 수 없으므로 가로 스크롤(overflow-x-auto)과 터치 스크롤 지원 스냅을 유지합니다 */}
+                    <div className="bg-secondary/60 rounded-xl p-3 md:p-4 overflow-x-auto whitespace-nowrap scrollbar-thin">
+                      <div className="inline-block min-w-max">
+                        {/* month labels */}
+                        <div className="flex gap-[3px] mb-1 pl-[15px]">
+                          {yearlyHeatmapWeeks.map((week, wi) => {
+                            const first = week.find((d) => d.getDate() === 1);
+                            return (
+                              <div
+                                key={wi}
+                                className="w-[11px] text-[8px] text-muted-foreground text-center leading-none shrink-0"
+                              >
+                                {first ? `${first.getMonth() + 1}` : ""}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="flex gap-[3px]">
+                          {/* day-of-week labels */}
+                          <div className="flex flex-col gap-[3px] mr-1">
+                            {["일", "월", "화", "수", "목", "금", "토"].map(
+                              (d) => (
+                                <div
+                                  key={d}
+                                  className="w-[11px] h-[11px] text-[8px] text-muted-foreground flex items-center justify-center leading-none"
+                                >
+                                  {d === "월" || d === "수" || d === "금"
+                                    ? d
+                                    : ""}
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          {yearlyHeatmapWeeks.map((week, wi) => (
                             <div
                               key={wi}
-                              className="w-[11px] text-[8px] text-muted-foreground text-center leading-none"
+                              className="flex flex-col gap-[3px] shrink-0"
                             >
-                              {first ? `${first.getMonth() + 1}` : ""}
+                              {week.map((day, di) => {
+                                const key = formatDate(day);
+                                const has = DIARY_DATES.has(key);
+                                const future = day > TODAY;
+                                const outOfYear =
+                                  day.getFullYear() !== TODAY.getFullYear();
+
+                                return (
+                                  <div
+                                    key={di}
+                                    title={outOfYear ? "" : key}
+                                    className="w-[11px] h-[11px] rounded-[2px] transition-colors cursor-default"
+                                    style={{
+                                      backgroundColor: outOfYear
+                                        ? "transparent"
+                                        : future
+                                          ? "rgba(180,140,110,0.15)"
+                                          : has
+                                            ? "var(--primary)"
+                                            : "var(--muted)",
+                                    }}
+                                  />
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </div>
-                      <div className="flex gap-[3px]">
-                        {/* day-of-week labels */}
-                        <div className="flex flex-col gap-[3px] mr-1">
-                          {["일", "월", "화", "수", "목", "금", "토"].map(
-                            (d) => (
-                              <div
-                                key={d}
-                                className="w-[11px] h-[11px] text-[8px] text-muted-foreground flex items-center justify-center leading-none"
-                              >
-                                {d === "월" || d === "수" || d === "금"
-                                  ? d
-                                  : ""}
-                              </div>
-                            ),
-                          )}
+                          ))}
                         </div>
-                        {heatmapWeeks.map((week, wi) => (
-                          <div key={wi} className="flex flex-col gap-[3px]">
-                            {week.map((day, di) => {
-                              const key = formatDate(day);
-                              const has = DIARY_DATES.has(key);
-                              const future = day > TODAY;
-                              const outOfYear =
-                                day.getFullYear() !== TODAY.getFullYear();
-                              return (
-                                <div
-                                  key={di}
-                                  title={outOfYear ? "" : key}
-                                  className="w-[11px] h-[11px] rounded-[2px] transition-colors cursor-default"
-                                  style={{
-                                    backgroundColor: outOfYear
-                                      ? "transparent"
-                                      : future
-                                        ? "rgba(180,140,110,0.06)"
-                                        : has
-                                          ? "var(--primary)"
-                                          : "var(--muted)",
-                                    opacity: future && !outOfYear ? 0.3 : 1,
-                                  }}
-                                />
-                              );
-                            })}
-                          </div>
-                        ))}
                       </div>
                     </div>
                   </section>
@@ -568,48 +468,6 @@ const SpacePage = () => {
                 </div>
               )}
 
-              {/* ══ MEMO ══ */}
-              {/* {activeTab === "memo" && (
-                <div>
-                  <SectionTitle>📌 메모 목록</SectionTitle>
-                  <div className="grid grid-cols-5 gap-3 mt-3">
-                    {MEMOS.slice(
-                      memoPage * MEMOS_PER_PAGE,
-                      (memoPage + 1) * MEMOS_PER_PAGE,
-                    ).map((memo) => (
-                      <div
-                        key={memo.id}
-                        className="rounded-xl p-3 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
-                        style={{
-                          backgroundColor: memo.color,
-                          boxShadow: "2px 2px 6px rgba(0,0,0,0.08)",
-                          minHeight: "130px",
-                        }}
-                      >
-                        <div
-                          className="w-8 h-2.5 rounded-sm mx-auto -mt-1 mb-2 opacity-60"
-                          style={{
-                            backgroundColor: memo.color,
-                            filter: "brightness(0.85)",
-                          }}
-                        />
-                        <div className="text-[11px] font-bold text-gray-700 mb-1.5 truncate">
-                          {memo.title}
-                        </div>
-                        <div className="text-[11px] text-gray-600 whitespace-pre-line leading-relaxed line-clamp-6">
-                          {memo.text}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Pagination
-                    page={memoPage}
-                    total={Math.ceil(MEMOS.length / MEMOS_PER_PAGE)}
-                    onChange={setMemoPage}
-                  />
-                </div>
-              )} */}
-
               {/* ══ DIARY ══ */}
               {activeTab === "diary" && (
                 <DiaryTab isOwner={isOwner} spaceId={numericSpaceId} />
@@ -618,7 +476,6 @@ const SpacePage = () => {
               {/* ══ GUESTBOOK ══ */}
               {activeTab === "guestbook" && (
                 <div className="space-y-5">
-                  {/* Header banner */}
                   <div
                     className="rounded-xl p-4 text-center"
                     style={{
@@ -638,7 +495,6 @@ const SpacePage = () => {
                     </p>
                   </div>
 
-                  {/* Write form */}
                   <div
                     className="rounded-xl p-4 border border-border"
                     style={{ background: "var(--secondary)" }}
@@ -653,18 +509,7 @@ const SpacePage = () => {
                       onChange={(e) =>
                         setGbForm({ ...gbForm, author: e.target.value })
                       }
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors mb-2"
-                      style={{
-                        background: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                      }}
-                      onFocus={(e) =>
-                        (e.target.style.borderColor = "var(--primary)")
-                      }
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = "var(--border)")
-                      }
+                      className="w-full rounded-lg px-3 py-2 text-sm outline-none border border-border bg-card text-foreground focus:border-primary transition-colors mb-2"
                     />
                     <textarea
                       placeholder="방명록을 남겨주세요 🌸"
@@ -672,35 +517,19 @@ const SpacePage = () => {
                       onChange={(e) =>
                         setGbForm({ ...gbForm, message: e.target.value })
                       }
-                      className="w-full rounded-lg px-3 py-2 text-sm resize-none outline-none transition-colors"
-                      style={{
-                        background: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                      }}
+                      className="w-full rounded-lg px-3 py-2 text-sm resize-none outline-none border border-border bg-card text-foreground focus:border-primary transition-colors"
                       rows={3}
-                      onFocus={(e) =>
-                        (e.target.style.borderColor = "var(--primary)")
-                      }
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = "var(--border)")
-                      }
                     />
                     <div className="flex justify-end mt-2">
                       <button
                         onClick={submitGuestbook}
-                        className="px-4 py-1.5 text-sm rounded-lg transition-opacity hover:opacity-85"
-                        style={{
-                          background: "var(--primary)",
-                          color: "var(--primary-foreground)",
-                        }}
+                        className="px-4 py-1.5 text-sm rounded-lg text-primary-foreground bg-primary transition-opacity hover:opacity-85"
                       >
                         남기기
                       </button>
                     </div>
                   </div>
 
-                  {/* Entries */}
                   <div className="space-y-3">
                     {guestbook
                       .slice(gbPage * GB_PER_PAGE, (gbPage + 1) * GB_PER_PAGE)
@@ -751,10 +580,7 @@ const SpacePage = () => {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3
-      className="text-xs font-semibold uppercase tracking-widest mb-3"
-      style={{ color: "var(--muted-foreground)" }}
-    >
+    <h3 className="text-xs font-semibold uppercase tracking-widest mb-3 text-muted-foreground">
       {children}
     </h3>
   );
@@ -775,10 +601,9 @@ function Pagination({
       <button
         onClick={() => onChange(page - 1)}
         disabled={page === 0}
-        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30"
-        style={{ background: "var(--secondary)" }}
+        className="w-7 h-7 rounded-lg flex items-center justify-center bg-secondary transition-colors disabled:opacity-30"
       >
-        <ChevronLeft size={14} style={{ color: "var(--muted-foreground)" }} />
+        <ChevronLeft size={14} className="text-muted-foreground" />
       </button>
       {Array.from({ length: total }).map((_, i) => (
         <button
@@ -799,10 +624,9 @@ function Pagination({
       <button
         onClick={() => onChange(page + 1)}
         disabled={page === total - 1}
-        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30"
-        style={{ background: "var(--secondary)" }}
+        className="w-7 h-7 rounded-lg flex items-center justify-center bg-secondary transition-colors disabled:opacity-30"
       >
-        <ChevronRight size={14} style={{ color: "var(--muted-foreground)" }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
       </button>
     </div>
   );

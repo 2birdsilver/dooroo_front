@@ -161,7 +161,7 @@ const DiaryTab = ({ isOwner, spaceId }: DiaryTabProps) => {
           <DiaryContent diary={selectedDiary} />
 
           {/* 하단 버튼 영역 */}
-          {!loading && (
+          {!loading && isOwner && (
             <div className="flex justify-end gap-2">
               {selectedDiary === null ? (
                 <button
