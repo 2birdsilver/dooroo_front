@@ -17,8 +17,9 @@ export interface UserInfo {
 interface AuthContextType {
   user: UserInfo | null; // 로그인된 유저 정보 (로그아웃 상태면 null)
   token: string | null; // JWT 토큰
+  spaceId: number | null; // 로그인 시점에 저장된 스페이스 ID
   isAuthenticated: boolean; // 로그인 여부 (true/false)
-  login: (token: string, userInfo: UserInfo) => void; // 로그인 함수
+  login: (token: string, userInfo: UserInfo, spaceId: number) => void; // 로그인 함수
   logout: () => void; // 로그아웃 함수
   isLoading: boolean; // 로컬스토리지 확인 중인지 여부 (깜빡임 방지)
 }
@@ -30,26 +31,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [spaceId, setSpaceId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // 브라우저가 켜질 때(혹은 새로고침 시) 로컬스토리지에서 기존 로그인 정보 복구
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
+    const savedSpaceId = localStorage.getItem("spaceId");
 
-    if (savedToken && savedUser) {
+    if (savedToken && savedUser && savedSpaceId) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
+      setSpaceId(parseInt(savedSpaceId));
     }
     setIsLoading(false); // 로딩 완료
   }, []);
 
   // 로그인 성공 시 실행할 함수
-  const login = (newToken: string, userInfo: UserInfo) => {
+  const login = (newToken: string, userInfo: UserInfo, spaceId: number) => {
     setToken(newToken);
     setUser(userInfo);
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(userInfo));
+    localStorage.setItem("spaceId", String(spaceId)); // 로그인 시점에 스페이스 ID 저장
   };
 
   // 로그아웃 시 실행할 함수
@@ -58,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("spaceId");
   };
 
   return (
@@ -65,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         token,
+        spaceId,
         isAuthenticated: !!user, // user 객체가 존재하면 true, 없으면 false
         login,
         logout,

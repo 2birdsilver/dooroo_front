@@ -9,11 +9,12 @@ import {
   Navigate,
   BrowserRouter,
 } from "react-router-dom";
-import MySpacePage from "../features/home/pages/MySpacePage";
+import MySpacePage from "../features/home/pages/SpacePage";
 import LoginPage from "../features/user/pages/LoginPage";
 import LandingPage from "../features/user/pages/LandingPage";
 import SignupPage from "../features/user/pages/SignupPage";
 import { AuthProvider, useAuth } from "../features/user/context/AuthContext";
+import SpacePage from "../features/home/pages/SpacePage";
 
 // type Tab = "home" | "memo" | "diary" | "guestbook";
 type Tab = "home" | "diary" | "guestbook";
@@ -329,7 +330,7 @@ const AppRoutes = () => {
         path="/"
         element={
           isAuthenticated ? (
-            <MySpacePage /> // 💡 복잡하게 상태 전달(setIsLoggedIn) 함수를 프롭스로 넘길 필요가 없어집니다!
+            <Navigate to="/space" replace /> // 이미 로그인했다면 메인(스페이스)으로 튕겨내기
           ) : (
             <LandingPage />
           )
@@ -348,6 +349,10 @@ const AppRoutes = () => {
         }
       />
       <Route path="/signup" element={<SignupPage />} />
+
+      {/* 두 경로 모두 하나의 컴포넌트(SpaceMainPage)로 통합 */}
+      <Route path="/space" element={<SpacePage />} />
+      <Route path="/space/:spaceId" element={<SpacePage />} />
 
       {/* 잘못된 경로 접근 시 루트로 이동 */}
       <Route path="*" element={<Navigate to="/" replace />} />

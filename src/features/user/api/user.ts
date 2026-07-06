@@ -46,7 +46,7 @@ export const registerUser = async (signUpData: SignupData): Promise<void> => {
 // 백엔드 서버에 로그인 요청을 보내고 토큰을 반환하는 함수
 export const loginUser = async (
   loginData: LoginData,
-): Promise<{ token: string; user: UserInfo }> => {
+): Promise<{ token: string; user: UserInfo; spaceId: number }> => {
   const response = await fetch(`${USER_URL}/login`, {
     method: "POST",
     headers: {

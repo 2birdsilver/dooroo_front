@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DIARY_ENTRIES } from "../../../mocks/mockData";
 import DiaryTab from "../../diary/components/DiaryTab";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../user/context/AuthContext";
 
 // type Tab = "home" | "memo" | "diary" | "guestbook";
@@ -213,13 +213,21 @@ const TABS: { id: Tab; label: string }[] = [
 
 const TODAY = new Date(2026, 5, 30);
 
-interface MySpacePageProps {
+interface SpacePageProps {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // ── main component ────────────────────────────────────────────────────────────
 
-const MySpacePage = () => {
+const SpacePage = () => {
+  const { spaceId } = useParams<{ spaceId: string }>();
+
+  // 로그인 시점에 저장해둔 나의 스페이스 ID (문자열 비교를 위해 똑같이 맞춰줌)
+  const mySpaceId = localStorage.getItem("spaceId");
+
+  // ⭐️ 핵심: 현재 가있는 공간이 "내 공간"인지 판별하는 스위치
+  const isOwner = spaceId === mySpaceId;
+
   const { user, token, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -799,4 +807,4 @@ function Pagination({
   );
 }
 
-export default MySpacePage;
+export default SpacePage;

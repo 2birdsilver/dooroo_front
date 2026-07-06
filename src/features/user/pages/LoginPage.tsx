@@ -24,10 +24,10 @@ const LoginPage = () => {
   */
   const handleTestLoginSubmit = async () => {
     const data = await loginUser({
-      email: "test@naver.com",
+      email: "test@test",
       password: "test",
     });
-    login(data.token, data.user);
+    login(data.token, data.user, data.spaceId); // Context 로그인 함수 실행 -> 상태 저장 및 로컬스토리지 저장 일괄 처리
     navigate("/");
   };
 
@@ -39,7 +39,7 @@ const LoginPage = () => {
 
     const data = await loginUser({ email, password });
     // Context 로그인 함수 실행 -> 상태 저장 및 로컬스토리지 저장 일괄 처리
-    login(data.token, data.user);
+    login(data.token, data.user, data.spaceId);
     navigate("/");
   };
 
