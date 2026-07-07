@@ -21,10 +21,13 @@ const DiaryToolbar = ({ editor }: Props) => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/api/images/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/images/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!response.ok) {
         throw new Error("서버 응답 실패");
