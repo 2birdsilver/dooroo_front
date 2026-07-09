@@ -11,7 +11,7 @@ const DiaryContent = ({ diary }: Props) => {
   }
 
   return (
-    <div className="rounded-xl p-5">
+    <div className="rounded-xl p-1">
       <h2 className="text-lg font-bold">{diary.title}</h2>
 
       <div className="text-sm text-gray-500 mb-3">{diary.diaryDate}</div>
