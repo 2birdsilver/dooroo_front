@@ -93,15 +93,38 @@ const DiaryTab = ({ isOwner, spaceId }: DiaryTabProps) => {
     }
   };
 
-  // 💡 [수정] 1. 선택된 날짜(일)가 바뀔 때 마다 일기 상세 정보 불러오기
+  // 💡 [진짜 통합] 하나의 useEffect에서 상세 데이터와 월별 마킹 데이터를 모두 제어합니다.
   useEffect(() => {
-    loadDiary();
-  }, [selectedDate]);
+    const loadDiaryAndCalendarData = async () => {
+      setLoading(true);
+      try {
+        // 1. 일기 상세 정보 조회
+        const dateStr = formatDate(selectedDate);
+        const diaryData = await diaryApi.getDiaryByDate(spaceId, dateStr);
+        setSelectedDiary(diaryData);
 
-  // 💡 [추가] 2. 달력의 월(Month)이 바뀔 때 마다 해당하는 월의 점 데이터 새로 고치기!
-  useEffect(() => {
-    fetchMonthlyDiaryDates(calMonth);
-  }, [calMonth]);
+        // 2. 달력 마킹용 데이터 조회
+        const year = calMonth.getFullYear();
+        const month = calMonth.getMonth() + 1;
+        const activeDates: string[] = await diaryApi.getDiaryDatesByMonth(
+          year,
+          month,
+          spaceId,
+        );
+        setDiaryDates(new Set(activeDates));
+      } catch (error) {
+        console.error("데이터 로딩 실패:", error);
+        // 에러가 나더라도 상세 일기는 null로 초기화해줍니다.
+        setSelectedDiary(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDiaryAndCalendarData();
+
+    // 의존성 배열에 관련된 모든 상태를 집어넣어 순차적 실행을 보장합니다.
+  }, [selectedDate, calMonth, spaceId]);
 
   // 💡 [수정] 일기 작성/수정 완료 및 삭제 시 일기 상세 정보와 달력의 점도 실시간 업데이트
   const handleUpdateSuccess = () => {
