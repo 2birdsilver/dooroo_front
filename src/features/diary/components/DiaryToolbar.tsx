@@ -21,7 +21,7 @@ const DiaryToolbar = ({ editor }: Props) => {
 
     // 1. 용량 체크 (단위: Byte -> KB 변환)
     const fileSizeKB = file.size / 1024;
-    const MAX_SIZE_KB = 300;
+    const MAX_SIZE_KB = 500;
 
     // 300KB를 넘는 경우에만 압축 진행
     if (fileSizeKB > MAX_SIZE_KB) {
