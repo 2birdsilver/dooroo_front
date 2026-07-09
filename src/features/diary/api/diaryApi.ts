@@ -24,10 +24,20 @@ export const diaryApi = {
   },
 
   // 2. Read List (스페이스별 일기 목록 조회)
-  getDiariesBySpace: async (spaceId: number): Promise<Diary[]> => {
+  getDiariesBySpace: async (spaceId: number): Promise<Diary | null> => {
     const response = await fetch(`${DIARY_URL}/space/${spaceId}`);
-    if (!response.ok) throw new Error("일기 목록 조회 실패");
-    return response.json();
+    // 1. 일기가 없는 날 204 No Content로 응답하는 백엔드를 위한 처리
+    if (response.status === 204) return null;
+
+    if (!response.ok) throw new Error("날짜별 일기 조회 실패");
+
+    // 2. 응답 본문이 비어있는지 텍스트로 먼저 확인 후 처리 (가장 안전함)
+    const text = await response.text();
+    if (!text) return null;
+
+    console.log("날짜별 일기 조회 응답 본문:", text);
+
+    return JSON.parse(text);
   },
 
   // 월별 일기 작성여부 목록 조회
@@ -44,10 +54,24 @@ export const diaryApi = {
   },
 
   // 각 스페이스에 따른 날짜별 일기 조회
-  getDiaryByDate: async (spaceId: number, date: string): Promise<Diary> => {
+  getDiaryByDate: async (
+    spaceId: number,
+    date: string,
+  ): Promise<Diary | null> => {
     const response = await fetch(`${DIARY_URL}/space/${spaceId}/date/${date}`);
+
     if (!response.ok) throw new Error("날짜별 일기 조회 실패");
-    return response.json();
+
+    // 1. response.json() 대신 text()로 본문을 '딱 한 번만' 읽습니다.
+    const resText = await response.text();
+
+    // 2. 본문이 완전히 비어있거나 공백만 있다면 일기가 없는 것이므로 null 반환
+    if (!resText || resText.trim() === "") {
+      return null;
+    }
+
+    // 3. 내용이 있을 때만 안전하게 JSON 객체로 변환하여 리턴합니다.
+    return JSON.parse(resText);
   },
 
   // 3. Read Single (단건 상세 조회)
