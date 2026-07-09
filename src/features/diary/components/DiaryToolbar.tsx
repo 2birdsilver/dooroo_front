@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/react";
 import Image from "@tiptap/extension-image";
 import React, { useRef } from "react";
 import { LuBold, LuItalic, LuUnderline, LuImage } from "react-icons/lu";
+import imageCompression from "browser-image-compression";
 
 interface Props {
   editor: Editor;
@@ -13,12 +14,45 @@ const DiaryToolbar = ({ editor }: Props) => {
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    // event.target.files가 존재하지 않을 수 있으므로 옵셔널 체이닝(?.)을 사용하거나 체크합니다.
     const file = event.target.files?.[0];
     if (!file || !editor) return;
 
+    let fileToSend = file;
+
+    // 1. 용량 체크 (단위: Byte -> KB 변환)
+    const fileSizeKB = file.size / 1024;
+    const MAX_SIZE_KB = 300;
+
+    // 300KB를 넘는 경우에만 압축 진행
+    if (fileSizeKB > MAX_SIZE_KB) {
+      try {
+        // 2. 압축 옵션 설정
+        const options = {
+          maxSizeMB: MAX_SIZE_KB / 1024, // 라이브러리 단위가 MB이므로 0.29MB 형태로 변환 (약 300KB)
+          maxWidthOrHeight: 1200, // 본문용 이미지에 적절한 가로/세로 최대 해상도
+          useWebWorker: true,
+        };
+
+        console.log(`압축 전 용량: ${fileSizeKB.toFixed(2)}KB`);
+
+        // 3. 이미지 압축 실행
+        const compressedFile = await imageCompression(file, options);
+
+        // 서버 전송을 위해 파일 객체 형태로 변환
+        fileToSend = new File([compressedFile], file.name, {
+          type: file.type,
+        });
+
+        console.log(`압축 후 용량: ${(fileToSend.size / 1024).toFixed(2)}KB`);
+      } catch (compressionError) {
+        console.error("이미지 압축 중 오류 발생:", compressionError);
+        // 압축 실패 시 사용자 경험을 위해 원본으로 진행하거나, 알림을 띄울 수 있습니다.
+      }
+    }
+
+    // 4. FormData에 최종 파일 담아서 서버 전송
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", fileToSend);
 
     try {
       const response = await fetch(
