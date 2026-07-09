@@ -230,12 +230,16 @@ const SpacePage = () => {
             <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
               <div className="flex flex-col items-center mb-4">
                 <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-3 shadow-inner"
+                  className="w-30 h-30 rounded-full flex items-center justify-center mb-3 shadow-inner overflow-hidden"
                   style={{
-                    background: "linear-gradient(135deg, #f0e4d4, #e8b49a)",
+                    background: "linear-gradient(135deg, #111111, #111111)", // 그라데이션 색상 예시
                   }}
                 >
-                  🌸
+                  <img
+                    src="https://pub-c0e8866a02a44dfcbd0c0806ce372413.r2.dev/uploads/free-icon-dog-194177.png"
+                    alt="이미지"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <h2 className="text-sm font-semibold text-foreground">
                   <span>{user?.nickname}</span>
