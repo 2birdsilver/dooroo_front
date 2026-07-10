@@ -224,12 +224,21 @@ const SpacePage = () => {
         >
           {user?.nickname}님의 스페이스
         </h2>
-        <button
-          onClick={handleLogout}
-          className="px-3 py-1.5 bg-muted text-xs font-medium rounded-lg hover:bg-destructive hover:text-white transition-colors"
-        >
-          로그아웃
-        </button>
+        {useAuth().isAuthenticated ? (
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 bg-muted text-xs font-medium rounded-lg hover:bg-destructive hover:text-white transition-colors"
+          >
+            로그아웃
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate("/login")}
+            className="px-3 py-1.5 bg-muted text-xs font-medium rounded-lg hover:bg-destructive hover:text-white transition-colors"
+          >
+            로그인
+          </button>
+        )}
       </header>
 
       <div className="max-w-5xl mx-auto">

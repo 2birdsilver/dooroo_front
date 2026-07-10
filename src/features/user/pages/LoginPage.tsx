@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { loginUser } from "../api/user";
 import { useAuth } from "../context/AuthContext";
@@ -9,37 +9,69 @@ interface LoginPageProps {
 }
 
 const LoginPage = () => {
-  const { login } = useAuth(); // Context에서 login 함수 가져오기
+  const { login, spaceId, isAuthenticated } = useAuth(); // Context에서 login 함수 가져오기
 
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  // 이미 로그인한 상태라면 메인(/)으로 튕겨냄
-  if (useAuth().isAuthenticated) return <Navigate to="/" replace />;
 
   /*
   테스트 로그인
   */
   const handleTestLoginSubmit = async () => {
-    const data = await loginUser({
-      email: "test@test",
-      password: "test",
-    });
-    login(data.token, data.user, data.spaceId); // Context 로그인 함수 실행 -> 상태 저장 및 로컬스토리지 저장 일괄 처리
+    try {
+      const data = await loginUser({
+        email: "test@test",
+        password: "test",
+      });
+      login(data.token, data.user, data.spaceId); // Context 로그인 함수 실행 -> 상태 저장 및 로컬스토리지 저장 일괄 처리
+
+      // 2. 로그인 성공 시 페이지 이동 (이 코드가 누락되어 있었습니다)
+      navigate(`/space/${data.spaceId}`);
+    } catch (error) {
+      // 에러 처리 추가
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "로그인 중 오류가 발생했습니다.",
+      );
+      console.error(error);
+    }
   };
 
   /*
 진짜 로그인
   */
+  /* 진짜 로그인 */
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const data = await loginUser({ email, password });
-    // Context 로그인 함수 실행 -> 상태 저장 및 로컬스토리지 저장 일괄 처리
-    login(data.token, data.user, data.spaceId);
+    try {
+      const data = await loginUser({ email, password });
+
+      // 1. Context 로그인 함수 실행
+      login(data.token, data.user, data.spaceId);
+
+      // 2. 로그인 성공 시 페이지 이동 (이 코드가 누락되어 있었습니다)
+      navigate(`/space/${data.spaceId}`);
+    } catch (error) {
+      // 에러 처리 추가
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "로그인 중 오류가 발생했습니다.",
+      );
+      console.error(error);
+    }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(`/space/${spaceId}`, { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-50">

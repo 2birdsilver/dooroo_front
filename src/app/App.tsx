@@ -224,6 +224,16 @@ const TABS: { id: Tab; label: string }[] = [
 
 const TODAY = new Date(2026, 5, 30);
 
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+
+  return isAuthenticated ? (
+    <Navigate to="/dashboard" replace />
+  ) : (
+    <>{children}</>
+  );
+};
+
 // ── main component ────────────────────────────────────────────────────────────
 
 const AppRoutes = () => {
@@ -329,16 +339,7 @@ const AppRoutes = () => {
       <Route path="/" element={<LandingPage />} />
 
       {/* 로그인 및 회원가입 페이지 */}
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/" replace /> // 이미 로그인했다면 메인(스페이스)으로 튕겨내기
-          ) : (
-            <LoginPage />
-          )
-        }
-      />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/space/:spaceId" element={<SpacePage />} />
 
