@@ -10,9 +10,14 @@
   --font-GriunCocochoitoon: "GriunCocochoitoon", sans-serif;
 
   /* 색상 설정 */
+  --color-brown-100: #efebe9; /* 배경 */
+  --color-brown-200: #d7ccc8;
+  --color-brown-300: #bcaaa4; /* 버튼 hover */
+  --color-brown-400: #a1887f;
+  --color-brown-500: #8d6e63; /* 버튼 배경 */
   --color-brown-600: #8b4513;
   --color-brown-700: #4e342e;
-  --color-brown-800: #3e2723;
+  --color-brown-800: #3e2723; /* 로고 */
 }
 
 /* 폰트 등록을 위한 @font-face (기존 style/font.css 내용을 여기로 옮겨도 됩니다) */

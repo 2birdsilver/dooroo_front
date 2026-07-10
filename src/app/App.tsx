@@ -326,16 +326,7 @@ const AppRoutes = () => {
       {/* 🌟 핵심 조건문 라우팅 
           이제 전역 로그인 상태(isAuthenticated)에 따라 실시간으로 화면이 바뀝니다.
       */}
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/space" replace /> // 이미 로그인했다면 메인(스페이스)으로 튕겨내기
-          ) : (
-            <LandingPage />
-          )
-        }
-      />
+      <Route path="/" element={<LandingPage />} />
 
       {/* 로그인 및 회원가입 페이지 */}
       <Route
@@ -349,9 +340,6 @@ const AppRoutes = () => {
         }
       />
       <Route path="/signup" element={<SignupPage />} />
-
-      {/* 두 경로 모두 하나의 컴포넌트(SpaceMainPage)로 통합 */}
-      <Route path="/space" element={<SpacePage />} />
       <Route path="/space/:spaceId" element={<SpacePage />} />
 
       {/* 잘못된 경로 접근 시 루트로 이동 */}

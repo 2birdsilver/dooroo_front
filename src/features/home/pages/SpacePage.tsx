@@ -212,7 +212,12 @@ const SpacePage = () => {
     >
       {/* Header max-w 매칭 및 패딩 처리 */}
       <header className="max-w-5xl mx-auto flex justify-between items-center mb-6 md:mb-8 pb-4 border-b">
-        <h2 className="text-xl font-CloudsofaNamgim">Dooroo</h2>
+        <h2
+          className="text-xl font-CloudsofaNamgim text-brown-800 cursor-pointer"
+          onClick={() => navigate(`/`)}
+        >
+          Dooroo
+        </h2>
         <h2
           className="text-xl font-GriunCocochoitoon cursor-pointer hover:text-[#b87a52] transition-colors inline-block"
           onClick={() => navigate(`/space/${spaceId}`)} // 👈 route에서 정의한 경로로 수정해 주세요!

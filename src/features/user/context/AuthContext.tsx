@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (newToken: string, userInfo: UserInfo, spaceId: number) => {
     setToken(newToken);
     setUser(userInfo);
+    setSpaceId(spaceId);
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(userInfo));
     localStorage.setItem("spaceId", String(spaceId)); // 로그인 시점에 스페이스 ID 저장
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setToken(null);
     setUser(null);
+    setSpaceId(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("spaceId");
