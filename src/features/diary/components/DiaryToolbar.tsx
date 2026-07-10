@@ -3,6 +3,9 @@ import Image from "@tiptap/extension-image";
 import React, { useRef } from "react";
 import { LuBold, LuItalic, LuUnderline, LuImage } from "react-icons/lu";
 import imageCompression from "browser-image-compression";
+import type {} from "@tiptap/extension-bold";
+import type {} from "@tiptap/extension-italic";
+import type {} from "@tiptap/extension-underline";
 
 interface Props {
   editor: Editor;

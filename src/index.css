@@ -3,3 +3,11 @@
   padding: 20px;
   outline: none;
 }
+
+@font-face {
+  font-family: "CloudsofaNamgim"; /* 사용할 폰트 이름 */
+  src: url("/fonts/Cloudsofa_namgim-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* 폰트 로드 전까지 텍스트가 안 보이는 현상 방지 */
+}

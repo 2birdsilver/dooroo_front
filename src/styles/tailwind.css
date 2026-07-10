@@ -1,4 +1,31 @@
-@import 'tailwindcss' source(none);
+@import "tailwindcss";
 @source '../**/*.{js,ts,jsx,tsx}';
 
-@import 'tw-animate-css';
+@import "tw-animate-css";
+
+/* 여기에 설정을 추가하세요 */
+@theme {
+  /* 폰트 설정 */
+  --font-CloudsofaNamgim: "CloudsofaNamgim", sans-serif;
+  --font-GriunCocochoitoon: "GriunCocochoitoon", sans-serif;
+
+  /* 색상 설정 */
+  --color-brown-600: #8b4513;
+  --color-brown-700: #4e342e;
+  --color-brown-800: #3e2723;
+}
+
+/* 폰트 등록을 위한 @font-face (기존 style/font.css 내용을 여기로 옮겨도 됩니다) */
+@font-face {
+  font-family: "CloudsofaNamgim";
+  src: url("/fonts/Cloudsofa_namgim-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "GriunCocochoitoon";
+  src: url("/fonts/Griun_Cocochoitoon-Rg.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
