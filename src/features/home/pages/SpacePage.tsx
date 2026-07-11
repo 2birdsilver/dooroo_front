@@ -4,6 +4,12 @@ import { DIARY_ENTRIES } from "../../../mocks/mockData";
 import DiaryTab from "../../diary/components/DiaryTab";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../user/context/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../app/components/ui/dropdown-menu";
 
 type Tab = "home" | "diary" | "guestbook";
 
@@ -225,12 +231,37 @@ const SpacePage = () => {
           {user?.nickname}님의 스페이스
         </h2>
         {useAuth().isAuthenticated ? (
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 bg-muted text-xs font-medium rounded-lg hover:bg-destructive hover:text-white transition-colors"
-          >
-            로그아웃
-          </button>
+          <DropdownMenu>
+            {/* 프로필 이미지를 클릭 영역으로 설정 */}
+            <DropdownMenuTrigger asChild>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-inner overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ background: "#111111" }}
+              >
+                <img
+                  src="https://pub-c0e8866a02a44dfcbd0c0806ce372413.r2.dev/uploads/free-icon-dog-194177.png"
+                  alt="프로필"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </DropdownMenuTrigger>
+
+            {/* 메뉴 내용 */}
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-destructive cursor-pointer"
+              >
+                마이페이지
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-destructive cursor-pointer"
+              >
+                로그아웃
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <button
             onClick={() => navigate("/login")}
@@ -304,7 +335,7 @@ const SpacePage = () => {
                 <div className="flex items-center justify-center md:justify-start gap-2">
                   <span>🎂</span> 1998년생
                 </div>
-                <div className="flex items-center justify-center md:justify-start gap-2">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
                   <span>📅</span> 2022년 가입
                 </div>
               </div>
