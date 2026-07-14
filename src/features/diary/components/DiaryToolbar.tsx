@@ -129,16 +129,18 @@ const DiaryToolbar = ({ editor }: Props) => {
       </button>
 
       {/* 이미지 추가 버튼 [cite: 5] */}
-      <button
-        type="button"
-        disabled={isUploading}
-        onClick={() => fileInputRef.current?.click()}
-        className={
-          isUploading ? "p-1.5 rounded hover:bg-gray-100 text-gray-600" : ""
-        }
-      >
-        <LuImage size={18} />
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="p-1.5 rounded hover:bg-gray-100 text-gray-600 transition-colors"
+        >
+          <LuImage size={18} />
+        </button>
+
+        <span className="text-xs text-gray-400">최대 10장까지 업로드 가능</span>
+      </div>
 
       <input
         type="file"
