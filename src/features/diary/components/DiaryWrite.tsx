@@ -84,10 +84,29 @@ const DiaryWrite = ({
 
   return (
     <div className="space-y-4">
-      {/* 💡 현재 모드에 따라 상단 타이틀을 다르게 표출 */}
-      <h2 className="text-xl font-bold">
-        {isEditMode ? "일기 수정하기" : "일기 작성하기"}
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">
+          {isEditMode ? "일기 수정하기" : "일기 작성하기"}
+        </h2>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg border"
+            disabled={loading}
+          >
+            취소
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="px-4 py-2 bg-primary text-white rounded"
+          >
+            {isEditMode ? "수정 완료" : "등록"}
+          </button>
+        </div>
+      </div>
 
       <input
         className="w-full rounded-lg border p-3"
@@ -99,24 +118,6 @@ const DiaryWrite = ({
 
       {/* 💡 에디터 내용이 바뀔 때마다 부모의 content 상태를 업데이트하도록 함수 전달 */}
       <TiptapEditor onChange={setContent} initialContent={content} />
-
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 rounded-lg border"
-          disabled={loading}
-        >
-          취소
-        </button>
-
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="px-4 py-2 bg-primary text-white rounded"
-        >
-          {isEditMode ? "수정 완료" : "등록"}
-        </button>
-      </div>
     </div>
   );
 };

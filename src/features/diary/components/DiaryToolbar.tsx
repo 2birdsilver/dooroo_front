@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react";
 import Image from "@tiptap/extension-image";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { LuBold, LuItalic, LuUnderline, LuImage } from "react-icons/lu";
 import imageCompression from "browser-image-compression";
 import type {} from "@tiptap/extension-bold";
@@ -13,12 +13,17 @@ interface Props {
 
 const DiaryToolbar = ({ editor }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    if (isUploading) return;
+
     const files = event.target.files;
     if (!files || files.length === 0) return;
+
+    setIsUploading(true);
 
     const fileArray = Array.from(files).slice(0, 10);
     if (files.length > 10) {
@@ -86,6 +91,11 @@ const DiaryToolbar = ({ editor }: Props) => {
     } catch (error) {
       console.error("이미지 처리 중 오류 발생:", error);
       alert("이미지 업로드 중 문제가 발생했습니다.");
+    } finally {
+      setIsUploading(false);
+      if (event.target) {
+        event.target.value = "";
+      }
     }
   };
 
@@ -121,8 +131,11 @@ const DiaryToolbar = ({ editor }: Props) => {
       {/* 이미지 추가 버튼 [cite: 5] */}
       <button
         type="button"
+        disabled={isUploading}
         onClick={() => fileInputRef.current?.click()}
-        className="p-1.5 rounded hover:bg-gray-100 text-gray-600"
+        className={
+          isUploading ? "p-1.5 rounded hover:bg-gray-100 text-gray-600" : ""
+        }
       >
         <LuImage size={18} />
       </button>
@@ -135,6 +148,16 @@ const DiaryToolbar = ({ editor }: Props) => {
         multiple
         style={{ display: "none" }}
       />
+
+      {isUploading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-700 font-medium">사진 업로드 중...</p>
+            <p className="text-gray-500 text-sm">잠시만 기다려 주세요</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
