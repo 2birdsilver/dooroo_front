@@ -74,7 +74,11 @@ const DiaryToolbar = ({ editor }: Props) => {
       if (!editor) return;
 
       imageUrls.forEach((url) => {
-        editor.chain().focus().setImage({ src: url }).run();
+        editor
+          .chain()
+          .focus()
+          .insertContent(`<p><img src="${url}" /></p><p></p>`)
+          .run();
 
         // 삽입 후 커서를 문서의 끝으로 이동
         editor.commands.setTextSelection(editor.state.doc.content.size);
