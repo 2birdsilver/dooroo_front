@@ -25,10 +25,10 @@ const DiaryToolbar = ({ editor }: Props) => {
 
     setIsUploading(true);
 
-    const fileArray = Array.from(files).slice(0, 10);
     if (files.length > 10) {
       alert("10장을 초과하여 선택하셨습니다. 앞의 10장만 업로드합니다.");
     }
+    const fileArray = Array.from(files).slice(0, 10);
 
     // 1. [핵심 수정] 모든 업로드 요청을 배열로 생성 (병렬 처리 시작)
     const uploadTasks = fileArray.map(async (file) => {
