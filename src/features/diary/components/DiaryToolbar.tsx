@@ -17,47 +17,41 @@ const DiaryToolbar = ({ editor }: Props) => {
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const file = event.target.files?.[0];
-    if (!file || !editor) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    let fileToSend = file;
-
-    // 1. 용량 체크 (단위: Byte -> KB 변환)
-    const fileSizeKB = file.size / 1024;
-    const MAX_SIZE_KB = 500;
-
-    // 300KB를 넘는 경우에만 압축 진행
-    if (fileSizeKB > MAX_SIZE_KB) {
-      try {
-        // 2. 압축 옵션 설정
-        const options = {
-          maxSizeMB: MAX_SIZE_KB / 1024, // 라이브러리 단위가 MB이므로 0.29MB 형태로 변환 (약 300KB)
-          maxWidthOrHeight: 1200, // 본문용 이미지에 적절한 가로/세로 최대 해상도
-          useWebWorker: true,
-        };
-
-        console.log(`압축 전 용량: ${fileSizeKB.toFixed(2)}KB`);
-
-        // 3. 이미지 압축 실행
-        const compressedFile = await imageCompression(file, options);
-
-        // 서버 전송을 위해 파일 객체 형태로 변환
-        fileToSend = new File([compressedFile], file.name, {
-          type: file.type,
-        });
-
-        console.log(`압축 후 용량: ${(fileToSend.size / 1024).toFixed(2)}KB`);
-      } catch (compressionError) {
-        console.error("이미지 압축 중 오류 발생:", compressionError);
-        // 압축 실패 시 사용자 경험을 위해 원본으로 진행하거나, 알림을 띄울 수 있습니다.
-      }
+    const fileArray = Array.from(files).slice(0, 10);
+    if (files.length > 10) {
+      alert("10장을 초과하여 선택하셨습니다. 앞의 10장만 업로드합니다.");
     }
 
-    // 4. FormData에 최종 파일 담아서 서버 전송
-    const formData = new FormData();
-    formData.append("file", fileToSend);
+    // 1. [핵심 수정] 모든 업로드 요청을 배열로 생성 (병렬 처리 시작)
+    const uploadTasks = fileArray.map(async (file) => {
+      let fileToSend = file;
+      const fileSizeKB = file.size / 1024;
+      const MAX_SIZE_KB = 500;
 
-    try {
+      // 용량 체크 및 압축 로직 (동일)
+      if (fileSizeKB > MAX_SIZE_KB) {
+        try {
+          const options = {
+            maxSizeMB: MAX_SIZE_KB / 1024,
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+          };
+          const compressedFile = await imageCompression(file, options);
+          fileToSend = new File([compressedFile], file.name, {
+            type: file.type,
+          });
+        } catch (compressionError) {
+          console.error("이미지 압축 중 오류 발생:", compressionError);
+        }
+      }
+
+      // 서버 업로드 fetch 요청
+      const formData = new FormData();
+      formData.append("file", fileToSend);
+
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/images/upload`,
         {
@@ -66,17 +60,28 @@ const DiaryToolbar = ({ editor }: Props) => {
         },
       );
 
-      if (!response.ok) {
-        throw new Error("서버 응답 실패");
-      }
-
+      if (!response.ok) throw new Error("서버 응답 실패");
       const data = await response.json();
-      const imageUrl = data.url;
+      return data.url; // 서버에서 반환된 이미지 URL
+    });
 
-      editor.chain().focus().setImage({ src: imageUrl }).run();
+    // 2. [핵심 수정] 모든 업로드가 완료될 때까지 대기
+    try {
+      const imageUrls = await Promise.all(uploadTasks);
+
+      // 3. [핵심 수정] 모든 URL을 에디터에 순차적으로 삽입
+      // 에디터 인스턴스가 준비되었는지 확인
+      if (!editor) return;
+
+      imageUrls.forEach((url) => {
+        editor.chain().focus().setImage({ src: url }).run();
+
+        // 삽입 후 커서를 문서의 끝으로 이동
+        editor.commands.setTextSelection(editor.state.doc.content.size);
+      });
     } catch (error) {
-      console.error("이미지 업로드 실패:", error);
-      alert("이미지 업로드 중 오류가 발생했습니다.");
+      console.error("이미지 처리 중 오류 발생:", error);
+      alert("이미지 업로드 중 문제가 발생했습니다.");
     }
   };
 
@@ -123,6 +128,7 @@ const DiaryToolbar = ({ editor }: Props) => {
         ref={fileInputRef}
         onChange={handleImageUpload}
         accept="image/*"
+        multiple
         style={{ display: "none" }}
       />
     </div>
